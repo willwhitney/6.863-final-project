@@ -1,0 +1,89 @@
+190 FROM REAL SATs
+lull trust v:n
+balk fortitude v:n
+betray loyalty v:n
+cajole compliance v:n
+hinder destination v:n
+soothe passion v:n
+c
+
+190 FROM REAL SATs
+ostrich bird n:n
+lion cat n:n
+goose flock n:n
+ewe sheep n:n
+cub bear n:n
+primate monkey n:n
+a
+
+190 FROM REAL SATs
+word language n:n
+paint portrait n:n
+poetry rhythm n:n
+note music n:n
+tale story n:n
+week year n:n
+c
+
+190 FROM REAL SATs
+coop poultry n:n
+aquarium fish n:n
+forest wildlife n:n
+crib nursery n:n
+fence yard n:n
+barn tool n:n
+a
+
+190 FROM REAL SATs
+legend map n:n
+subtitle translation n:n
+bar graph n:n
+figure blueprint n:n
+key chart n:n
+footnote information n:n
+d
+
+190 FROM REAL SATs
+billboard advertisement n:n
+sculpture museum n:n
+store window n:n
+library book n:n
+canvas painting n:n
+theater intermission n:n
+d
+
+190 FROM REAL SATs
+custom society n:n
+hypothesis evidence n:n
+testimony trial n:n
+ballot election n:n
+rule game n:n
+contest debate n:n
+d
+
+190 FROM REAL SATs
+tunnel mine n:n
+conduit fluid n:n
+corner intersection n:n
+sign detour n:n
+aisle seat n:n
+corridor building n:n
+e
+
+190 FROM REAL SATs
+diversion boredom n:n
+assurance uncertainty n:n
+enmity hatred n:n
+secrecy curiosity n:n
+reward deed n:n
+sluggishness fatigue n:n
+a
+
+190 FROM REAL SATs
+thicket shrubs n:n
+grove trees n:n
+orchard apples n:n
+pasture cows n:n
+reef waves n:n
+crop plants n:n
+a
