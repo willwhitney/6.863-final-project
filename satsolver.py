@@ -1,3 +1,5 @@
+import random
+
 target = 'questions.txt'
 ansmap = {'a':0,'b':1,'c':2,'d':3,'e':4}
 
@@ -19,7 +21,22 @@ def testSolver(target):
     return correct/total
 
 def solve(stem,options):
-    print stem, options
-    return 0
+    stemR = getRelationship(stem)
+    scores = {}
+    for opt in options:
+	optR = getRelationship(opt)
+	sim = scoreSimilarity(stemR,optR)
+	scores[opt] = sim
+    best = max(scores,key=lambda k: scores[k])
+    print stem, best
+    guess = options.index(best)
+    return guess
+#    return random.randint(0,4)
 
-testSolver(target)
+def getRelationship(pair):
+    return ['isA']
+
+def scoreSimilarity(rel0,rel1):
+    return random.randint(0,4)
+
+print testSolver(target)
