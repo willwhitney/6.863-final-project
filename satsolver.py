@@ -4,6 +4,8 @@ target = 'questions.txt'
 ansmap = {'a':0,'b':1,'c':2,'d':3,'e':4}
 
 def testSolver(target):
+    #given a target question file, read the questions and makes guesses
+    #returns the percentage of the questions answered correctly
     file = open(target).read()
     questions = file.split('\r\n\r\n')
     correct, total = 0.0,0.0
@@ -21,6 +23,11 @@ def testSolver(target):
     return correct/total
 
 def solve(stem,options):
+    #given a stem that's a tuple (word0,word1)
+    #and a list of options in the same format
+    #get the relationship between every pair of words
+    #scores each option's relationship's similarity to the stem's relationship
+    #returns the option index of the most similar option
     stemR = getRelationship(stem)
     scores = {}
     for opt in options:
@@ -37,6 +44,13 @@ def getRelationship(pair):
     return ['isA']
 
 def scoreSimilarity(rel0,rel1):
-    return random.randint(0,4)
+    #given two relationships, scores how similar they are
+    if rel0 == rel1:
+	return 1.0
+    elif rel0 and rel1:
+	return 0.5
+    else:
+	return 0.0
+#    return random.randint(0,4)
 
 print testSolver(target)
