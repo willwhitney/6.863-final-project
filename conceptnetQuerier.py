@@ -15,22 +15,26 @@ def get_relationship(a, b):
   bdata = get_conceptnet_term(b)
   
   aterms = {}
+  matches = []
   for edge in adata['edges']:
     for end in edge['endLemmas']:
       aterms[end] = edge
       
   for term in aterms:
     if b == term:
-      return (aterms[term]['rel'], 1)
+      matches.append( {'rels': (aterms[term]['rel'],), 'degree': 1, 'edges': aterms[b]} )
 
   for edge in bdata['edges']:
     for end in edge['endLemmas']:
       if end == a:
-        return (edge['rel'], 1)
+        matches.append( {'rels': (edge['rel'],), 'degree': 1, 'edges': edge} )
       if end in aterms:
-        return (edge['rel'], 2)
-  return (None, 0)
-# get_relationship("house", "home")
+        matches.append( {'rels': (aterms[end]['rel'], edge['rel']), 'degree': 2, 'edges': [edge, aterms[end]]} )
+  
+  relationships = [match['rels'] for match in matches]
+  return relationships
+  
+# print get_relationship("house", "home")
 
 # {"isA", "has"}
 
