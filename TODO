@@ -1,0 +1,4 @@
+Increase relationship distance (currently too many relationship-less pairs)
+Return multiple relationships instead of just one
+Get information out of definition (if available)
+Prioritize certain relationships in scoring
