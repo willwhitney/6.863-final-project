@@ -1,4 +1,5 @@
 import random
+from conceptnetquerier import *
 
 target = 'questions.txt'
 ansmap = {'a':0,'b':1,'c':2,'d':3,'e':4}
@@ -28,10 +29,10 @@ def solve(stem,options):
     #get the relationship between every pair of words
     #scores each option's relationship's similarity to the stem's relationship
     #returns the option index of the most similar option
-    stemR = getRelationship(stem)
+    stemR = get_relationship(stem)
     scores = {}
     for opt in options:
-	optR = getRelationship(opt)
+	optR = get_relationship(opt)
 	sim = scoreSimilarity(stemR,optR)
 	scores[opt] = sim
     best = max(scores,key=lambda k: scores[k])
@@ -40,8 +41,8 @@ def solve(stem,options):
     return guess
 #    return random.randint(0,4)
 
-def getRelationship(pair):
-    return ['isA']
+#def getRelationship(pair):
+#    return 'isA'
 
 def scoreSimilarity(rel0,rel1):
     #given two relationships, scores how similar they are
