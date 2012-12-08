@@ -29,7 +29,7 @@ def get_relationship(a, b):
         return (edge['rel'], 1)
       if end in aterms:
         return (edge['rel'], 2)
-        
+  return (None, 0)
 # get_relationship("house", "home")
 
 # {"isA", "has"}
