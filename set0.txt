@@ -1,0 +1,8 @@
+190 FROM REAL SATs
+ostrich bird n:n
+lion cat n:n
+goose flock n:n
+ewe sheep n:n
+cub bear n:n
+primate monkey n:n
+a

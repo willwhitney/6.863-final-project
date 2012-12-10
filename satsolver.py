@@ -12,7 +12,7 @@ def testSolver(target, verbose):
     questions = file.split('\n\n')
     correct, total = 0.0,0.0
     for q in questions:
-	q = q.split('\n')
+        q = q.split('\n')
         stem, opts, ans = q[1], q[2:7], q[7]
         stem = stem.split()
         stem = (stem[0],stem[1])
@@ -31,39 +31,39 @@ def solve(stem,options, verbose = False):
     #scores each option's relationship's similarity to the stem's relationship
     #returns the option index of the most similar option
     stemRels = get_relationship(*stem)
-    # print stem, stemRels
+    if verbose:
+        print stem, stemRels
     scores = {}
     for opt in options:
-	optRels = get_relationship(*opt)
-	if verbose:
-	 print opt, optRels
-	sim = scoreSimilarity(stemRels,optRels)
-	print sim
-	scores[opt] = sim
+        optRels = get_relationship(*opt)
+        if verbose:
+            print opt, optRels
+        sim = scoreSimilarity(stemRels,optRels)
+        print sim
+        scores[opt] = sim
     best = max(scores,key=lambda k: scores[k])
     if verbose:
-      print 'My guess is', best, '\n'
+        print 'My guess is', best, '\n'
     guess = options.index(best)
     return guess
 #    return random.randint(0,4)
-
-#def getRelationship(pair):
-#    return 'isA'
 
 def scoreSimilarity(relsA,relsB):
     #given two lists of relationships, scores how similar they are
     score = 0.0
     weights = {(u'/r/IsA',):0.3}
     if not relsA or not relsB:
-	return score
-    for rA in relsA:
-	for rB in relsB:
-	     if rA == rB:
-		if rA in weights:
-		    w = weights[rA]
-		else:
-		    w = 1.0
-		score += 1.0*w
+        return score
+    else:
+        score += 0.1
+        for rA in relsA:
+            for rB in relsB:
+                 if rA == rB:
+                    if rA in weights:
+                        w = weights[rA]
+                    else:
+                        w = 1.0
+                    score += 1.0*w
     return score
 #    return random.randint(0,4)
 
@@ -73,17 +73,3 @@ argparser.add_argument("-v", "--verbose", help="show every question", action="st
 args = argparser.parse_args()
 
 print testSolver(args.questions, args.verbose)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
