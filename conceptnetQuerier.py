@@ -85,7 +85,7 @@ def get_relationship(a, b):
     relationships = get_relationship_simple(a, b, True, True)
   return relationships
 
-print get_relationship("legend", "map")
+#print get_relationship("legend", "map")
 
 # {"isA", "has"}
 
@@ -93,10 +93,3 @@ print get_relationship("legend", "map")
 # print traincepts['edges'][0]
 # traincepts['edges'][0]['endLemmas']
 # traincepts['edges'][0]['startLemmas']
-
-
-
-
-
-
-

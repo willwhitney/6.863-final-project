@@ -52,9 +52,7 @@ def scoreSimilarity(relsA,relsB):
     #given two lists of relationships, scores how similar they are
     score = 0.0
     weights = {(u'/r/IsA',):0.3}
-    if not relsA or not relsB:
-        return score
-    else:
+    if relsA and relsB:
         score += 0.1
         for rA in relsA:
             for rB in relsB:
@@ -64,6 +62,7 @@ def scoreSimilarity(relsA,relsB):
                     else:
                         w = 1.0
                     score += 1.0*w
+        score = score / len(relsB)
     return score
 #    return random.randint(0,4)
 
