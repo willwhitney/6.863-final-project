@@ -6,7 +6,18 @@ def get_conceptnet_term(term):
     r = requests.get('http://conceptnet5.media.mit.edu/data/5.1/search?startLemmas=' + term)
   json = r.json
   return json
-  
+
+# build up and returns a dict of words A is connected to directly
+def build_term_list(a, adata):
+  aterms = {}
+  for edge in adata['edges']:
+    if is_useful_relationship(edge['rel']):
+      if edge['endLemmas'] == a:
+        aterms[edge['startLemmas']] = edge
+      else:
+        aterms[edge['endLemmas']] = edge
+  return aterms
+
 def is_useful_relationship(relationship):
   if relationship == u'/r/TranslationOf':
     return False
@@ -32,21 +43,12 @@ def search_indirect_oneway(a, aterms, adata, b, bterms, bdata, matches):
 def get_relationship(a, b):
   adata = get_conceptnet_term(a)
   bdata = get_conceptnet_term(b)
-  
   matches = []
-  aterms = {}
-  bterms = {}
   
-  # build up a list of words A is connected to directly
-  for edge in adata['edges']:
-    if is_useful_relationship(edge['rel']):
-        aterms[edge['endLemmas']] = edge
+  # build up a list of words A and B are connected to directly
+  aterms = build_term_list(a, adata)
+  bterms = build_term_list(b, bdata)
         
-  # build a list of words B is connected to directly
-  for edge in bdata['edges']:
-    if is_useful_relationship(edge['rel']):
-      bterms[edge['endLemmas']] = edge
-      
   # check if B is a word A is connected to directly
   for term in aterms:
     if term == b:
@@ -70,7 +72,7 @@ def get_relationship(a, b):
   relationships = [match['rels'] for match in matches]
   return relationships
   
-print get_relationship("house", "home")
+# print get_relationship("coop", "poultry")
 
 # {"isA", "has"}
 
