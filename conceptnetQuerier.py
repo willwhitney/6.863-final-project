@@ -1,8 +1,8 @@
 import requests
 
-def get_conceptnet_term(term):
+def get_conceptnet_term(term, force_search = False):
   r = requests.get('http://conceptnet5.media.mit.edu/data/5.1/c/en/' + term)
-  if r.json['numFound'] == 0:
+  if force_search or r.json['numFound'] == 0:
     r = requests.get('http://conceptnet5.media.mit.edu/data/5.1/search?startLemmas=' + term)
   json = r.json
   return json
@@ -23,7 +23,7 @@ def is_useful_relationship(relationship):
     return False
   return True
   
-def search_indirect_oneway(a, aterms, adata, b, bterms, bdata, matches):
+def search_indirect_oneway(a, aterms, adata, b, bterms, bdata, matches, a_first = True):
   # check if A is connected to B by a single word contained in one of A's connections
   for termA in aterms:
     words = termA.split()
@@ -37,12 +37,15 @@ def search_indirect_oneway(a, aterms, adata, b, bterms, bdata, matches):
         #check if B is connected to one of those single words
         for termB in bterms:
           if subtermA == termB:
-            matches.append( {'rels': (aterms[termA]['rel'], bterms[termB]['rel']), 'degree': 2, 'edges': [aterms[termA], bterms[termB]]} )
+            if a_first:
+              matches.append( {'rels': (aterms[termA]['rel'], bterms[termB]['rel']), 'degree': 2, 'edges': [aterms[termA], bterms[termB]]} )
+            else:
+              matches.append( {'rels': (bterms[termB]['rel'], aterms[termA]['rel']), 'degree': 2, 'edges': [bterms[termB], aterms[termA]]} )
 
 
-def get_relationship(a, b):
-  adata = get_conceptnet_term(a)
-  bdata = get_conceptnet_term(b)
+def get_relationship_simple(a, b, force_search_A = False, force_search_B = False):
+  adata = get_conceptnet_term(a, force_search_A)
+  bdata = get_conceptnet_term(b, force_search_B)
   matches = []
   
   # build up a list of words A and B are connected to directly
@@ -72,7 +75,17 @@ def get_relationship(a, b):
   relationships = [match['rels'] for match in matches]
   return relationships
   
-# print get_relationship("coop", "poultry")
+def get_relationship(a, b):
+  relationships = get_relationship_simple(a, b, False, False)
+  if len(relationships) == 0:
+    relationships = get_relationship_simple(a, b, False, True)
+  if len(relationships) == 0:
+    relationships = get_relationship_simple(a, b, True, False)
+  if len(relationships) == 0:
+    relationships = get_relationship_simple(a, b, True, True)
+  return relationships
+
+print get_relationship("legend", "map")
 
 # {"isA", "has"}
 
