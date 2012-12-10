@@ -8,14 +8,26 @@ def get_conceptnet_term(term, force_search = False):
   return json
 
 # build up and returns a dict of words A is connected to directly
-def build_term_list(a, adata):
+def build_term_list(a, adata, forward = True):
   aterms = {}
   for edge in adata['edges']:
     if is_useful_relationship(edge['rel']):
+      
+      # A is the end of this edge
       if edge['endLemmas'] == a:
         aterms[edge['startLemmas']] = edge
+        if forward:
+          edge['rel'] = edge['rel'] + 'backward'
+        else:
+          edge['rel'] = edge['rel'] + 'forward'
+          
+      # A is the start of this edge
       else:
         aterms[edge['endLemmas']] = edge
+        if forward:
+          edge['rel'] = edge['rel'] + 'forward'
+        else:
+          edge['rel'] = edge['rel'] + 'backward'
   return aterms
 
 def is_useful_relationship(relationship):
@@ -49,8 +61,8 @@ def get_relationship_simple(a, b, force_search_A = False, force_search_B = False
   matches = []
   
   # build up a list of words A and B are connected to directly
-  aterms = build_term_list(a, adata)
-  bterms = build_term_list(b, bdata)
+  aterms = build_term_list(a, adata, True)
+  bterms = build_term_list(b, bdata, False)
         
   # check if B is a word A is connected to directly
   for term in aterms:
@@ -85,7 +97,7 @@ def get_relationship(a, b):
     relationships = get_relationship_simple(a, b, True, True)
   return relationships
 
-print get_relationship("legend", "map")
+print get_relationship("tale", "story")
 
 # {"isA", "has"}
 
