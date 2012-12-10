@@ -17,17 +17,17 @@ def build_term_list(a, adata, forward = True):
       if edge['endLemmas'] == a:
         aterms[edge['startLemmas']] = edge
         if forward:
-          edge['rel'] = edge['rel'] + 'backward'
+          edge['rel'] = edge['rel'] + 'B'
         else:
-          edge['rel'] = edge['rel'] + 'forward'
+          edge['rel'] = edge['rel'] + 'F'
           
       # A is the start of this edge
       else:
         aterms[edge['endLemmas']] = edge
         if forward:
-          edge['rel'] = edge['rel'] + 'forward'
+          edge['rel'] = edge['rel'] + 'F'
         else:
-          edge['rel'] = edge['rel'] + 'backward'
+          edge['rel'] = edge['rel'] + 'B'
   return aterms
 
 def is_useful_relationship(relationship):
@@ -63,6 +63,23 @@ def get_relationship_simple(a, b, force_search_A = False, force_search_B = False
   # build up a list of words A and B are connected to directly
   aterms = build_term_list(a, adata, True)
   bterms = build_term_list(b, bdata, False)
+  
+  # check if A and B both occur within the same start or end lemma from either word
+  sameLemma = False
+  for edge in adata['edges']:
+    if a in edge['startLemmas'] and b in edge['startLemmas'] and not sameLemma:
+      matches.append( {'rels': 'sameLemma', 'degree': 1, 'edges': [edge]} )
+      sameLemma = True
+    if a in edge['endLemmas'] and b in edge['endLemmas'] and not sameLemma:
+      matches.append( {'rels': 'sameLemma', 'degree': 1, 'edges': [edge]} )
+      sameLemma = True
+  for edge in bdata['edges']:
+    if a in edge['startLemmas'] and b in edge['startLemmas'] and not sameLemma:
+      matches.append( {'rels': 'sameLemma', 'degree': 1, 'edges': [edge]} )
+      sameLemma = True
+    if a in edge['endLemmas'] and b in edge['endLemmas'] and not sameLemma:
+      matches.append( {'rels': 'sameLemma', 'degree': 1, 'edges': [edge]} )
+      sameLemma = True
         
   # check if B is a word A is connected to directly
   for term in aterms:
