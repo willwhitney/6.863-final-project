@@ -1,7 +1,9 @@
 import requests
 
 def get_conceptnet_term(term):
-  r = requests.get('http://conceptnet5.media.mit.edu/data/5.1/search?startLemmas=' + term)
+  r = requests.get('http://conceptnet5.media.mit.edu/data/5.1/c/en/' + term)
+  if r.json['numFound'] == 0:
+    r = requests.get('http://conceptnet5.media.mit.edu/data/5.1/search?startLemmas=' + term)
   json = r.json
   for i in xrange(len(r.json['edges'])):
     # json['edges'][i]['startLemmas'] = r.json['edges'][i]['startLemmas'].split()
@@ -52,7 +54,6 @@ def get_relationship(a, b):
       for subterm in term.split():
         if a == subterm:
           matches.append( {'rels': (bterms[term]['rel'],), 'degree': 1, 'edges': bterms[term]} )
-    
   
   relationships = [match['rels'] for match in matches]
   return relationships
