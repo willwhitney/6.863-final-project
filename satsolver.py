@@ -35,6 +35,7 @@ def solve(stem,options):
 	optRels = get_relationship(*opt)
 	print opt, optRels
 	sim = scoreSimilarity(stemRels,optRels)
+	print sim
 	scores[opt] = sim
     best = max(scores,key=lambda k: scores[k])
     print 'My guess is', best, '\n'
@@ -48,12 +49,17 @@ def solve(stem,options):
 def scoreSimilarity(relsA,relsB):
     #given two lists of relationships, scores how similar they are
     score = 0.0
+    weights = {(u'/r/IsA',):0.3}
     if not relsA or not relsB:
 	return score
     for rA in relsA:
 	for rB in relsB:
 	     if rA == rB:
-		score += 1.0
+		if rA in weights:
+		    w = weights[rA]
+		else:
+		    w = 1.0
+		score += 1.0*w
     return score
 #    return random.randint(0,4)
 
