@@ -51,9 +51,9 @@ def solve(stem,options, verbose = False):
 def scoreSimilarity(relsA,relsB):
     #given two lists of relationships, scores how similar they are
     score = 0.0
-    weights = {(u'/r/IsA',):0.3}
+    weights = {(u'/r/IsAforward',):0.3,(u'/r/IsAbackward',):0.3}
     if relsA and relsB:
-        score += 0.1
+        score += 0.01
         for rA in relsA:
             for rB in relsB:
                  if rA == rB:
