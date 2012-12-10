@@ -1,7 +1,6 @@
 import random
 from conceptnetQuerier import *
 
-target = 'fewQuestions.txt'
 ansmap = {'a':0,'b':1,'c':2,'d':3,'e':4}
 
 def testSolver(target):
@@ -29,16 +28,16 @@ def solve(stem,options):
     #get the relationship between every pair of words
     #scores each option's relationship's similarity to the stem's relationship
     #returns the option index of the most similar option
-    stemR,stemW = get_relationship(*stem)
-    print stem, stemR
+    stemRels = get_relationship(*stem)
+    print stem, stemRels
     scores = {}
     for opt in options:
-	optR,optW = get_relationship(*opt)
-	print opt, optR
-	sim = scoreSimilarity(stemR,optR)
+	optRels = get_relationship(*opt)
+	print opt, optRels
+	sim = scoreSimilarity(stemRels,optRels)
 	scores[opt] = sim
     best = max(scores,key=lambda k: scores[k])
-    print 'My guess is', best, '\n\n'
+    print 'My guess is', best, '\n'
     guess = options.index(best)
     return guess
 #    return random.randint(0,4)
@@ -46,14 +45,15 @@ def solve(stem,options):
 #def getRelationship(pair):
 #    return 'isA'
 
-def scoreSimilarity(rel0,rel1):
-    #given two relationships, scores how similar they are
-    if rel0 == rel1:
-	return 1.0
-    elif rel0 and rel1:
-	return 0.5
-    else:
+def scoreSimilarity(relsA,relsB):
+    #given two lists of relationships, scores how similar they are
+    if not relsA or not relsB:
 	return 0.0
+    for rA in relsA:
+	for rB in relsB:
+	     if rA == rB:
+		return 1.0
+    return 0.5
 #    return random.randint(0,4)
 
-print testSolver(target)
+print testSolver('easyset.txt')
