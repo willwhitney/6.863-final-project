@@ -47,13 +47,14 @@ def solve(stem,options):
 
 def scoreSimilarity(relsA,relsB):
     #given two lists of relationships, scores how similar they are
+    score = 0.0
     if not relsA or not relsB:
-	return 0.0
+	return score
     for rA in relsA:
 	for rB in relsB:
 	     if rA == rB:
-		return 1.0
-    return 0.5
+		score += 1.0
+    return score
 #    return random.randint(0,4)
 
-print testSolver('easyset.txt')
+print testSolver('set1.txt')
