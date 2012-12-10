@@ -5,17 +5,29 @@ def get_conceptnet_term(term):
   if r.json['numFound'] == 0:
     r = requests.get('http://conceptnet5.media.mit.edu/data/5.1/search?startLemmas=' + term)
   json = r.json
-  for i in xrange(len(r.json['edges'])):
-    # json['edges'][i]['startLemmas'] = r.json['edges'][i]['startLemmas'].split()
-    # json['edges'][i]['endLemmas'] = r.json['edges'][i]['endLemmas'].split()
-    json['edges'][i]['startLemmas'] = [r.json['edges'][i]['startLemmas']]
-    json['edges'][i]['endLemmas'] = [r.json['edges'][i]['endLemmas']]
   return json
   
 def is_useful_relationship(relationship):
   if relationship == u'/r/TranslationOf':
     return False
   return True
+  
+def search_indirect_oneway(a, aterms, adata, b, bterms, bdata, matches):
+  # check if A is connected to B by a single word contained in one of A's connections
+  for termA in aterms:
+    words = termA.split()
+    if len(words) > 1:
+      for subtermA in words:
+        
+        # check if one of those single words is B
+        if subtermA == b:
+          matches.append( {'rels': (aterms[termA]['rel'],), 'degree': 1, 'edges': aterms[termA]} )
+          
+        #check if B is connected to one of those single words
+        for termB in bterms:
+          if subtermA == termB:
+            matches.append( {'rels': (aterms[termA]['rel'], bterms[termB]['rel']), 'degree': 2, 'edges': [aterms[termA], bterms[termB]]} )
+
 
 def get_relationship(a, b):
   adata = get_conceptnet_term(a)
@@ -23,42 +35,42 @@ def get_relationship(a, b):
   
   matches = []
   aterms = {}
+  bterms = {}
   
-  # build up a list of words A is connected to
+  # build up a list of words A is connected to directly
   for edge in adata['edges']:
     if is_useful_relationship(edge['rel']):
-      for end in edge['endLemmas']:
-        aterms[end] = edge
-      
-  # see if B is one of those words A is connected to
-  for term in aterms:
-    if b == term:
-      matches.append( {'rels': (aterms[term]['rel'],), 'degree': 1, 'edges': aterms[b]} )
-    for subterm in term.split():
-      if b == subterm:
-        matches.append( {'rels': (aterms[term]['rel'],), 'degree': 1, 'edges': aterms[term]} )
-
-  bterms = {}
-  # check each word B is connected to and see if A is also connected to it
+        aterms[edge['endLemmas']] = edge
+        
+  # build a list of words B is connected to directly
   for edge in bdata['edges']:
     if is_useful_relationship(edge['rel']):
-      for end in edge['endLemmas']:
-        bterms[end] = edge
-        if end in aterms:
-          matches.append( {'rels': (aterms[end]['rel'], edge['rel']), 'degree': 2, 'edges': [edge, aterms[end]]} )
-        
-  # see if A is one of those words B is connected to
+      bterms[edge['endLemmas']] = edge
+      
+  # check if B is a word A is connected to directly
+  for term in aterms:
+    if term == b:
+      matches.append( {'rels': (aterms[term]['rel'],), 'degree': 1, 'edges': aterms[b]} )
+      
+  # check if A is a word B is connected to directly
   for term in bterms:
-    if a == term:
+    if term == a:
       matches.append( {'rels': (bterms[term]['rel'],), 'degree': 1, 'edges': bterms[a]} )
-      for subterm in term.split():
-        if a == subterm:
-          matches.append( {'rels': (bterms[term]['rel'],), 'degree': 1, 'edges': bterms[term]} )
+      
+  # check if A and B are connected via an intermediate term
+  for termA in aterms:
+    for termB in bterms:
+      if termA == termB:
+        matches.append( {'rels': (aterms[termA]['rel'], bterms[termB]['rel']), 'degree': 2, 'edges': [aterms[termA], bterms[termB]]} )
+        
+  # check if A and B are connected indirectly
+  search_indirect_oneway(a, aterms, adata, b, bterms, bdata, matches)
+  search_indirect_oneway(b, bterms, bdata, a, aterms, adata, matches)
   
   relationships = [match['rels'] for match in matches]
   return relationships
   
-# print get_relationship("ewe", "sheep")
+print get_relationship("house", "home")
 
 # {"isA", "has"}
 
@@ -66,3 +78,10 @@ def get_relationship(a, b):
 # print traincepts['edges'][0]
 # traincepts['edges'][0]['endLemmas']
 # traincepts['edges'][0]['startLemmas']
+
+
+
+
+
+
+
