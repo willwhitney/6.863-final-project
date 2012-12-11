@@ -1,0 +1,8 @@
+190 FROM REAL SATs
+word language n:n
+paint portrait n:n
+poetry rhythm n:n
+note music n:n
+tale story n:n
+week year n:n
+c
