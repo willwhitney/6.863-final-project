@@ -1,10 +1,34 @@
 import requests
+import cPickle as pickle
+
+def pickle_term_map():
+  pickleFile = open('termMap.pickle', 'wb')
+  pickle.dump( termMap, pickleFile )
+  pickleFile.close()
+
+def unpickle_term_map():
+  try:
+    pickleFile = open( "termMap.pickle", "rb" )
+    terms = pickle.load( pickleFile )
+    if len(terms) > 0:
+      return terms
+  except Exception as e:
+    print "Exception: ", e
+    return {}
+  finally:
+    pickleFile.close()
+  return {}
+
+termMap = unpickle_term_map()
 
 def get_conceptnet_term(term, force_search = False):
+  if term + str(force_search) in termMap:
+    return termMap[term + str(force_search)]
   r = requests.get('http://conceptnet5.media.mit.edu/data/5.1/c/en/' + term)
   if force_search or r.json['numFound'] == 0:
     r = requests.get('http://conceptnet5.media.mit.edu/data/5.1/search?startLemmas=' + term)
   json = r.json
+  termMap[term + str(force_search)] = json
   return json
 
 # build up and returns a dict of words A is connected to directly
@@ -113,6 +137,9 @@ def get_relationship(a, b):
   if len(relationships) == 0:
     relationships = get_relationship_simple(a, b, True, True)
   return relationships
+  
+
+
 
 #print get_relationship("legend", "map")
 

@@ -3,8 +3,158 @@ import random
 import argparse
 from collections import defaultdict
 from conceptnetQuerier import *
+import Queue
+import threading
+import time
+import math
 
 ansmap = {'a':0,'b':1,'c':2,'d':3,'e':4}
+
+def threadedSolver(target, numQuestions, verbose):
+    # Solves a list of n questions using n threads. Causes breakage.
+    q = Queue.Queue()
+    
+    file = open(target).read()
+    questions = file.split('\n\n')
+    correctCount, total = 0.0, 0.0
+    threads = []
+    
+    numQuestions = min(numQuestions, len(questions))
+    for index, question in enumerate(questions):
+        if index >= numQuestions:
+            break
+        t = threading.Thread(target=solveAndCheck, args=(question, q, verbose))
+        t.daemon = True
+        threads.append(t)
+        t.start()
+            
+    while total < numQuestions:
+        correct = q.get()
+        if correct:
+            correctCount += 1
+        if not correct == None:
+            total += 1
+        dead = 0
+        for thread in threads:
+            if not thread.isAlive():
+                dead += 1
+        if dead == len(threads):
+            print "Correct: " + str(correctCount)
+            print "Total: " + str(total)
+            return correctCount / total
+            
+    print "Correct: " + str(correctCount)
+    print "Total: " + str(total)
+    return correctCount / total
+    
+def solveAndCheckMultiple(questions, q, params, verbose):
+    # solves and checks a list of questions.
+    correct, total = 0, 0
+    for question in questions:
+        right = solveAndCheckBlocking(question, params, verbose)
+        if right:
+            correct += 1
+        if right != None:
+            total += 1
+    q.put( (correct, total) )
+    
+def quadThreadedSolver(target, params, verbose):
+    # Splits the problem in four, solves each set in a separate thread,
+    # then aggregates results.
+    q = Queue.Queue()
+    
+    f = open(target).read()
+    questions = f.split('\n\n')
+    correctCount, total = 0.0, 0.0
+    threads = []
+    
+    for i in xrange(0, 4):
+        start = int(i * math.floor(len(questions) / 4))
+        end = start + len(questions) / 4
+        if i == 3:
+            end = len(questions) + 1
+        print "from:", start, "to: ",  end
+            
+        t = threading.Thread(target=solveAndCheckMultiple, args=(questions[start: end], q, params, verbose))
+        t.daemon = True
+        threads.append(t)
+        t.start()
+    
+    returned = 0
+    while returned < 4:
+        subsetCorrect, subsetTotal = q.get()
+        returned += 1
+        correctCount += subsetCorrect
+        total += subsetTotal
+                    
+    print "Correct: " + str(correctCount)
+    print "Total: " + str(total)
+    return correctCount / total
+    
+def biThreadedSolver(target, verbose):
+    # Splits the problem in four, solves each set in a separate thread,
+    # then aggregates results.
+    q = Queue.Queue()
+
+    f = open(target).read()
+    questions = f.split('\n\n')
+    correctCount, total = 0.0, 0.0
+    threads = []
+
+    for i in [0, len(questions) / 2]:
+        print "i: ", i
+        t = threading.Thread(target=solveAndCheckMultiple, args=(questions[i: i + len(questions) / 2], q, verbose))
+        t.daemon = True
+        threads.append(t)
+        t.start()
+
+    returned = 0
+    while returned < 2:
+        subsetCorrect, subsetTotal = q.get()
+        returned += 1
+        correctCount += subsetCorrect
+        total += subsetTotal
+
+    print "Correct: " + str(correctCount)
+    print "Total: " + str(total)
+    return correctCount / total
+        
+def solveAndCheck(question, q, params, verbose):
+    # for use with threadedSolver. Dumps its results in a queue.
+    try:
+        question = question.split('\n')
+        stem, opts, ans = question[1], question[2:7], question[7]
+        stem = stem.split()
+        stem = (stem[0],stem[1])
+        opts = [opt.split() for opt in opts]
+        opts = [(opt[0],opt[1]) for opt in opts]
+        guess = solve(stem, opts, params, verbose)
+        if guess == ansmap[ans]:
+            q.put(True)
+        else:
+            q.put(False)
+    except:
+        q.put(None)
+        return
+
+def solveAndCheckBlocking(question, params, verbose):
+    # just like solveAndCheck, but blocks and returns.
+    # for use with solveAndCheckMultiple.
+    try:
+        question = question.split('\n')
+        stem, opts, ans = question[1], question[2:7], question[7]
+        stem = stem.split()
+        stem = (stem[0],stem[1])
+        opts = [opt.split() for opt in opts]
+        opts = [(opt[0],opt[1]) for opt in opts]
+        guess = solve(stem, opts, params, verbose)
+        if guess == ansmap[ans]:
+            return True
+        else:
+            return False
+    except Exception as e:
+        print "EXCEPTION! ", e
+        return None
 
 def testSolver(target,params,verbose):
     #given a target question file, read the questions and makes guesses
@@ -25,6 +175,7 @@ def testSolver(target,params,verbose):
         total += 1
         if guess == ansmap[ans]:
             correct += 1
+    pickle_term_map()
     return correct/total
 
 def solve(stem,options,params,verbose=False):
@@ -42,6 +193,8 @@ def solve(stem,options,params,verbose=False):
         if verbose:
             print opt, optRels
         sim = scoreSimilarity(stemRels,optRels,params)
+        if verbose:
+            print sim
         scores[opt] = sim
         if verbose:
             print sim
@@ -98,8 +251,17 @@ def setParams(norm,dir,subs):
 
 argparser = argparse.ArgumentParser(description="Solve SAT analogy questions.")
 argparser.add_argument("questions", help="the set of questions to use")
+argparser.add_argument("number", help="how many questions to answer", nargs='?', default=400, type=int)
 argparser.add_argument("-v", "--verbose", help="show every question", action="store_true")
 args = argparser.parse_args()
 
 params = setParams(False,False,False)
-print testSolver(args.questions, params, args.verbose)
+# print testSolver(args.questions, params, args.verbose)
+# print threadedSolver(args.questions, args.number, args.verbose)
+# print testSolver(args.questions, args.verbose)
+print quadThreadedSolver(args.questions, params, args.verbose)
+# print biThreadedSolver(args.questions, args.verbose)
+
+
+
+
