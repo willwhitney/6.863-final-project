@@ -1,10 +1,12 @@
 import requests
 import cPickle as pickle
+import copy
 
-def pickle_term_map():
-  pickleFile = open('termMap.pickle', 'wb')
-  pickle.dump( termMap, pickleFile )
-  pickleFile.close()
+# commented out to prevent accidental overwrite
+# def pickle_term_map():
+#   pickleFile = open('termMap.pickle', 'wb')
+#   pickle.dump( termMap, pickleFile )
+#   pickleFile.close()
 
 def unpickle_term_map():
   try:
@@ -23,13 +25,13 @@ termMap = unpickle_term_map()
 
 def get_conceptnet_term(term, force_search = False):
   if term + str(force_search) in termMap:
-    return termMap[term + str(force_search)]
+    return copy.deepcopy(termMap[term + str(force_search)])
   r = requests.get('http://conceptnet5.media.mit.edu/data/5.1/c/en/' + term)
   if force_search or r.json['numFound'] == 0:
     r = requests.get('http://conceptnet5.media.mit.edu/data/5.1/search?startLemmas=' + term)
   json = r.json
   termMap[term + str(force_search)] = json
-  return json
+  return copy.deepcopy(json)
 
 # build up and returns a dict of words A is connected to directly
 def build_term_list(a, adata, forward = True):
@@ -92,17 +94,17 @@ def get_relationship_simple(a, b, force_search_A = False, force_search_B = False
   sameLemma = False
   for edge in adata['edges']:
     if a in edge['startLemmas'] and b in edge['startLemmas'] and not sameLemma:
-      matches.append( {'rels': 'sameLemma', 'degree': 1, 'edges': [edge]} )
+      matches.append( {'rels': ('sameLemma',), 'degree': 1, 'edges': [edge]} )
       sameLemma = True
     if a in edge['endLemmas'] and b in edge['endLemmas'] and not sameLemma:
-      matches.append( {'rels': 'sameLemma', 'degree': 1, 'edges': [edge]} )
+      matches.append( {'rels': ('sameLemma',), 'degree': 1, 'edges': [edge]} )
       sameLemma = True
   for edge in bdata['edges']:
     if a in edge['startLemmas'] and b in edge['startLemmas'] and not sameLemma:
-      matches.append( {'rels': 'sameLemma', 'degree': 1, 'edges': [edge]} )
+      matches.append( {'rels': ('sameLemma',), 'degree': 1, 'edges': [edge]} )
       sameLemma = True
     if a in edge['endLemmas'] and b in edge['endLemmas'] and not sameLemma:
-      matches.append( {'rels': 'sameLemma', 'degree': 1, 'edges': [edge]} )
+      matches.append( {'rels': ('sameLemma',), 'degree': 1, 'edges': [edge]} )
       sameLemma = True
         
   # check if B is a word A is connected to directly
@@ -141,7 +143,11 @@ def get_relationship(a, b):
 
 
 
-#print get_relationship("legend", "map")
+# print get_relationship("ostrich", "bird")
+# print get_relationship("ostrich", "bird")
+# print get_relationship("ostrich", "bird")
+# print get_relationship("ostrich", "bird")
+
 
 # {"isA", "has"}
 
