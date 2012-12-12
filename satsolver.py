@@ -205,25 +205,41 @@ def scoreSimilarity(relsA,relsB,params):
     #given two lists of relationships, scores how similar they are
     score = 0.0
     if relsA and relsB:
+
+        #existing relationships modifer
         score += params['existMod']
+
         for rA in relsA:
             for rB in relsB:
+
+                #identical relationships modifier
                 if rA == rB:
                     score += params['idMod']*params['weights'][rA]
+
+                #directionality frame modifier
                 dirsA = [r[-1] for r in rA]
                 dirsB = [r[-1] for r in rB]
                 if dirsA == dirsB:
                     score += params['dirMod']
+
+                #subsets modifiers
                 if len(rA) == 2 and len(rB) == 2:
                     if rA[0] == rB[0] or rA[1] == rB[1]:
                         score += params['subsMod']
-        # params['normMod'] is in the range [0, 1]
+                elif len(rA) == 2 and len(rB) == 1:
+                    if rA[0] == rB[0] or rA[1] == rB[0]:
+                        score += params['subsMod']
+                elif len(rA) == 1 and len(rB) == 2:
+                    if rB[0] == rA[0] and rB[1] == rA[0]:
+                        score += params['subsMod']
+
+        #normalization by length of relsB
         normalization = (len(relsB) - 1) * params['normMod'] + 1
         score = score * normalization / len(relsB)
-    return score
-#    return random.randint(0,4)
 
-def setParams(isaf,isab,same):
+    return score
+
+def setParams():
     params = {'existMod':0.01,   #modifier added for existing relationships
               'idMod':1.0,       #modifier added for identical relationships
               'normMod':1.0,     #modifier added for normalizing by number of relationships (1.0 is off)
@@ -231,7 +247,7 @@ def setParams(isaf,isab,same):
               'subsMod':0.0,     #modifier added for matched subset (0.0 is off)
               'defWeight':1.0    #default weight of relations
               }
-    weights = defaultdict(lambda:params['defWeight'], {(u'/r/IsAF',):isaf, (u'/r/IsAB',):isab, (u'sameLemma'):same})
+    weights = defaultdict(lambda:params['defWeight'], {(u'/r/IsAF',):0.4, (u'/r/IsAB',):0.4, (u'sameLemma'):0.4})
     params['weights'] = weights
     return params
 
@@ -254,8 +270,6 @@ def optimizePars():
     print m
     print results[m]
 
-optimizePars()
-#params = setParams(1.0,0.0,0.2)
-#print quadThreadedSolver(args.questions, params, args.verbose)
-#params = setParams(1.0,0.0,0.0)
-#print quadThreadedSolver(args.questions, params, args.verbose)
+#optimizePars()
+params = setParams()
+print quadThreadedSolver(args.questions, params, args.verbose)
