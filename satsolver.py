@@ -251,8 +251,8 @@ def optimizePars():
     print results
     print max(results,key=lambda k: results[k])
 
-#optimizePars()
+optimizePars()
 #params = setParams(1.0,0.0,0.2)
 #print quadThreadedSolver(args.questions, params, args.verbose)
-params = setParams(1.0,0.0,0.0)
-print quadThreadedSolver(args.questions, params, args.verbose)
+#params = setParams(1.0,0.0,0.0)
+#print quadThreadedSolver(args.questions, params, args.verbose)
