@@ -82,6 +82,34 @@ def quadThreadedSolver(target, verbose):
     print "Correct: " + str(correctCount)
     print "Total: " + str(total)
     return correctCount / total
+    
+def biThreadedSolver(target, verbose):
+    # Splits the problem in four, solves each set in a separate thread,
+    # then aggregates results.
+    q = Queue.Queue()
+
+    f = open(target).read()
+    questions = f.split('\n\n')
+    correctCount, total = 0.0, 0.0
+    threads = []
+
+    for i in [0, len(questions) / 2]:
+        print "i: ", i
+        t = threading.Thread(target=solveAndCheckMultiple, args=(questions[i: i + len(questions) / 2], q, verbose))
+        t.daemon = True
+        threads.append(t)
+        t.start()
+
+    returned = 0
+    while returned < 2:
+        subsetCorrect, subsetTotal = q.get()
+        returned += 1
+        correctCount += subsetCorrect
+        total += subsetTotal
+
+    print "Correct: " + str(correctCount)
+    print "Total: " + str(total)
+    return correctCount / total
         
 def solveAndCheck(question, q, verbose):
     # for use with threadedSolver. Dumps its results in a queue.
@@ -196,6 +224,7 @@ args = argparser.parse_args()
 # print threadedSolver(args.questions, args.number, args.verbose)
 # print testSolver(args.questions, args.verbose)
 print quadThreadedSolver(args.questions, args.verbose)
+# print biThreadedSolver(args.questions, args.verbose)
 
 
 
