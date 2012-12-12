@@ -223,26 +223,17 @@ def scoreSimilarity(relsA,relsB,params):
     return score
 #    return random.randint(0,4)
 
-def setParams(IsAF,IsAB,sameLemma):
+def setParams(norm,dir,subs):
     params = {'existMod':0.01,   #modifier added for existing relationships
               'idMod':1.0,       #modifier added for identical relationships
-              'normMod':0.0,     #modifier added for normalizing by number of relationships ()
-              'dirMod':0.0,      #modifier added for matched directionality (0.0 if off)
-              'subsMod':0.0,     #modifier added for matched subset (0.0 is off)
+              'normMod':norm,     #modifier added for normalizing by number of relationships (1.0 is off)
+              'dirMod':dir,      #modifier added for matched directionality (0.0 if off)
+              'subsMod':subs,     #modifier added for matched subset (0.0 is off)
               'defWeight':1.0    #default weight of relations
               }
-    weights = defaultdict(lambda:params['defWeight'], {(u'/r/IsAF',):IsAF, (u'/r/IsAB',):IsAB, (u'sameLemma'):sameLemma})
+    weights = defaultdict(lambda:params['defWeight'], {(u'/r/IsAF',):0.4, (u'/r/IsAB',):0.2, (u'sameLemma'):0.4})
     params['weights'] = weights
     return params
-
-#def tryParams(questions):
-#    combos = [(n,d,s) for n in [True,False] for d in [True,False] for s in [True,False]]
-#    for com in combos:
-#        par = setParams(*com)
-#        acc = testSolver(questions,par,False)
-#        print par,acc
-
-#tryParams('questions.txt')
 
 argparser = argparse.ArgumentParser(description="Solve SAT analogy questions.")
 argparser.add_argument("questions", help="the set of questions to use")
@@ -250,12 +241,18 @@ argparser.add_argument("number", help="how many questions to answer", nargs='?',
 argparser.add_argument("-v", "--verbose", help="show every question", action="store_true")
 args = argparser.parse_args()
 
-for isaf in xrange(0,10,2):
-    for isab in [0,10,2]:
-        for same in [0,10,2]:
-            isaf = float(isaf) / 10
-            isab = float(isab) / 10
-            same = float(same) / 10
-            params = setParams(isaf,isab,same)
-            print 'params',isaf,isab,same
-            print quadThreadedSolver(args.questions, params, args.verbose)
+def optimizePars():
+    paropts = [(float(a)/10,float(b)/10,float(c)/10) for a in xrange(0,12,2) for b in xrange(0,12,2) for c in xrange(0,12,2)] 
+    results = {}
+    for par in paropts:
+        params = setParams(*par)
+        acc = quadThreadedSolver(args.questions, params, args.verbose)
+        results[par] = acc
+    print results
+    print max(results,key=lambda k: results[k])
+
+#optimizePars()
+#params = setParams(1.0,0.0,0.2)
+#print quadThreadedSolver(args.questions, params, args.verbose)
+params = setParams(1.0,0.0,0.0)
+print quadThreadedSolver(args.questions, params, args.verbose)
