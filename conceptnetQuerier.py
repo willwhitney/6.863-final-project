@@ -19,8 +19,7 @@ def unpickle_term_map():
     pickleFile.close()
   return {}
 
-#termMap = unpickle_term_map()
-termMap = {}
+termMap = unpickle_term_map()
 
 def get_conceptnet_term(term, force_search = False):
   if term + str(force_search) in termMap:
