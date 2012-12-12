@@ -217,7 +217,9 @@ def scoreSimilarity(relsA,relsB,params):
                 if len(rA) == 2 and len(rB) == 2:
                     if rA[0] == rB[0] or rA[1] == rB[1]:
                         score += params['subsMod']
-#        score = score * params['normMod'] / len(relsB)
+        # params['normMod'] is in the range [0, 1]
+        normalization = (len(relsB) - 1) * params['normMod'] + 1
+        score = score * normalization / len(relsB)
     return score
 #    return random.randint(0,4)
 
