@@ -73,7 +73,7 @@ def quadThreadedSolver(target, params, verbose):
         end = start + len(questions) / 4
         if i == 3:
             end = len(questions) + 1
-        print "from:", start, "to: ",  end
+#        print "from:", start, "to: ",  end
             
         t = threading.Thread(target=solveAndCheckMultiple, args=(questions[start: end], q, params, verbose))
         t.daemon = True
@@ -87,8 +87,8 @@ def quadThreadedSolver(target, params, verbose):
         correctCount += subsetCorrect
         total += subsetTotal
                     
-    print "Correct: " + str(correctCount)
-    print "Total: " + str(total)
+#    print "Correct: " + str(correctCount)
+#    print "Total: " + str(total)
     return correctCount / total
     
 def biThreadedSolver(target, verbose):
@@ -102,7 +102,7 @@ def biThreadedSolver(target, verbose):
     threads = []
 
     for i in [0, len(questions) / 2]:
-        print "i: ", i
+#        print "i: ", i
         t = threading.Thread(target=solveAndCheckMultiple, args=(questions[i: i + len(questions) / 2], q, verbose))
         t.daemon = True
         threads.append(t)
@@ -115,8 +115,8 @@ def biThreadedSolver(target, verbose):
         correctCount += subsetCorrect
         total += subsetTotal
 
-    print "Correct: " + str(correctCount)
-    print "Total: " + str(total)
+#    print "Correct: " + str(correctCount)
+#    print "Total: " + str(total)
     return correctCount / total
         
 def solveAndCheck(question, q, params, verbose):
@@ -193,8 +193,6 @@ def solve(stem,options,params,verbose=False):
         if verbose:
             print opt, optRels
         sim = scoreSimilarity(stemRels,optRels,params)
-        if verbose:
-            print sim
         scores[opt] = sim
         if verbose:
             print sim
@@ -211,7 +209,6 @@ def scoreSimilarity(relsA,relsB,params):
         for rA in relsA:
             for rB in relsB:
                 if rA == rB:
-                    print 'matched', rA
                     score += params['idMod']*params['weights'][rA]
                 dirsA = [r[-1] for r in rA]
                 dirsB = [r[-1] for r in rB]
@@ -220,19 +217,19 @@ def scoreSimilarity(relsA,relsB,params):
                 if len(rA) == 2 and len(rB) == 2:
                     if rA[0] == rB[0] or rA[1] == rB[1]:
                         score += params['subsMod']
-        score = score * params['normMod'] / len(relsB)
+#        score = score * params['normMod'] / len(relsB)
     return score
 #    return random.randint(0,4)
 
-def setParams():
-    params = {'existMod':0.01,    #modifier added for existing relationships
-              'idMod':1.0,        #modifier added for identical relationships
-              'normMod':0.0,       #modifier added for normalizing by number of relationships ()
-              'dirMod':0.0,       #modifier added for matched directionality (0.0 if off)
-              'subsMod':0.0,      #modifier added for matched subset (0.0 is off)
+def setParams(IsAF,IsAB,sameLemma):
+    params = {'existMod':0.01,   #modifier added for existing relationships
+              'idMod':1.0,       #modifier added for identical relationships
+              'normMod':0.0,     #modifier added for normalizing by number of relationships ()
+              'dirMod':0.0,      #modifier added for matched directionality (0.0 if off)
+              'subsMod':0.0,     #modifier added for matched subset (0.0 is off)
               'defWeight':1.0    #default weight of relations
               }
-    weights = defaultdict(lambda:params['defWeight'], {(u'/r/IsAF',):0.4, (u'/r/IsAB',):0.4, (u'sameLemma'):0.2})
+    weights = defaultdict(lambda:params['defWeight'], {(u'/r/IsAF',):IsAF, (u'/r/IsAB',):IsAB, (u'sameLemma'):sameLemma})
     params['weights'] = weights
     return params
 
@@ -251,10 +248,12 @@ argparser.add_argument("number", help="how many questions to answer", nargs='?',
 argparser.add_argument("-v", "--verbose", help="show every question", action="store_true")
 args = argparser.parse_args()
 
-params = setParams()
-#print testSolver(args.questions, params, args.verbose)
-# print testSolver(args.questions, params, args.verbose)
-# print threadedSolver(args.questions, args.number, args.verbose)
-# print testSolver(args.questions, args.verbose)
-print quadThreadedSolver(args.questions, params, args.verbose)
-# print biThreadedSolver(args.questions, args.verbose)
+for isaf in xrange(0,10,2):
+    for isab in [0,10,2]:
+        for same in [0,10,2]:
+            isaf = float(isaf) / 10
+            isab = float(isab) / 10
+            same = float(same) / 10
+            params = setParams(isaf,isab,same)
+            print 'params',isaf,isab,same
+            print quadThreadedSolver(args.questions, params, args.verbose)
