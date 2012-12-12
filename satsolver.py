@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 import random
 import argparse
+from collections import defaultdict
 from conceptnetQuerier import *
 
 ansmap = {'a':0,'b':1,'c':2,'d':3,'e':4}
@@ -56,12 +57,8 @@ def scoreSimilarity(relsA,relsB,params):
         score += params['existMod']
         for rA in relsA:
             for rB in relsB:
-                weights = params['weights']
-                if rA in weights:
-                    w = weights[rA]
-                else: w = params['defWeight']
                 if rA == rB:
-                    score += params['idMod']*w
+                    score += params['idMod']*params['weights'][rA]
                 if params['dirMatch'] == True:
                     dirsA = [r[-1] for r in rA]
                     dirsB = [r[-1] for r in rB]
@@ -70,26 +67,39 @@ def scoreSimilarity(relsA,relsB,params):
                 if params['subsMatch'] == True:
                     if len(rA) == 2 and len(rB) == 2:
                         if rA[0] == rB[0] or rA[1] == rB[1]:
-                            score += params['subsMod']*w
+                            score += params['subsMod']
         if params['normB'] == True:
-            score = score * len(relsB)
+            score = score / len(relsB)
     return score
 #    return random.randint(0,4)
+
+def setParams(norm,dir,subs):
+    params = {'existMod':0.01,    #modifier added for existing relationships
+              'idMod':1.0,        #modifier added for identical relationships
+              'normB':norm,      #true for normalizing by number of relationships in option
+              'dirMatch':dir,   #true for additional matching on only directionality
+              'dirMod':0.1,       #modifier added for matched directionality
+              'subsMatch':subs,  #true for additional matching on subsets of relationship
+              'subsMod':0.5,      #modifier added for matched subset
+              'defWeight':1.0,    #default weight of relations
+              }
+    weights = defaultdict(lambda:params['defWeight'], {(u'/r/IsAF',):0.4, (u'/r/IsAB',):0.4, (u'sameLemma'):0.3})
+    params['weights'] = weights
+    return params
+
+#def tryParams(questions):
+#    combos = [(n,d,s) for n in [True,False] for d in [True,False] for s in [True,False]]
+#    for com in combos:
+#        par = setParams(*com)
+#        acc = testSolver(questions,par,False)
+#        print par,acc
+
+#tryParams('questions.txt')
 
 argparser = argparse.ArgumentParser(description="Solve SAT analogy questions.")
 argparser.add_argument("questions", help="the set of questions to use")
 argparser.add_argument("-v", "--verbose", help="show every question", action="store_true")
 args = argparser.parse_args()
 
-params = {'existMod':0.01,    #modifier added for existing relationships
-          'idMod':1.0,        #modifier added for identical relationships
-          'normB':False,      #true for normalizing by number of relationships of option
-          'dirMatch':False,   #true for matching on only directionality
-          'dirMod':0.1,       #modifier added for matched directionality
-          'subsMatch':False,  #true for matching subset of relationship
-          'subsMod':0.5,      #modifier added for matched subset
-          'defWeight':1.0,    #default weight of relations
-          'weights':{(u'/r/IsAF',):0.4, (u'/r/IsAB',):0.4, (u'sameLemma'):0.3}          
-          }
-
+params = setParams(False,False,False)
 print testSolver(args.questions, params, args.verbose)
