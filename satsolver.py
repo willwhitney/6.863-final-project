@@ -235,15 +235,6 @@ def setParams(IsAF,IsAB,sameLemma):
     params['weights'] = weights
     return params
 
-#def tryParams(questions):
-#    combos = [(n,d,s) for n in [True,False] for d in [True,False] for s in [True,False]]
-#    for com in combos:
-#        par = setParams(*com)
-#        acc = testSolver(questions,par,False)
-#        print par,acc
-
-#tryParams('questions.txt')
-
 argparser = argparse.ArgumentParser(description="Solve SAT analogy questions.")
 argparser.add_argument("questions", help="the set of questions to use")
 argparser.add_argument("number", help="how many questions to answer", nargs='?', default=400, type=int)
@@ -251,7 +242,13 @@ argparser.add_argument("-v", "--verbose", help="show every question", action="st
 args = argparser.parse_args()
 
 paropts = [(float(isaf)/10,float(isab)/10,float(same)/10) for isaf in xrange(0,12,2) for isab in xrange(0,12,2) for same in xrange(0,12,2)] 
+results = {}
 for par in paropts:
     params = setParams(*par)
-    print 'params',par
-    print quadThreadedSolver(args.questions, params, args.verbose)
+    acc = quadThreadedSolver(args.questions, params, args.verbose)
+    results[par] = acc
+print results
+print max(results,key=lambda k: results[k])
+
+params = setParams(0.4,0.4,0.3)
+print quadThreadedSolver(args.questions, params, args.verbose)
