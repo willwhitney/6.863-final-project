@@ -148,6 +148,8 @@ def solveAndCheckBlocking(question, params, verbose):
         opts = [opt.split() for opt in opts]
         opts = [(opt[0],opt[1]) for opt in opts]
         guess = solve(stem, opts, params, verbose)
+        if verbose:
+            print 'My guess is', opts[guess], 'the right answer is', opts[ansmap[ans]], '\n'
         if guess == ansmap[ans]:
             return True
         else:
@@ -175,7 +177,7 @@ def testSolver(target,params,verbose):
         total += 1
         if guess == ansmap[ans]:
             correct += 1
-    pickle_term_map()
+#    pickle_term_map()
     return correct/total
 
 def solve(stem,options,params,verbose=False):
@@ -193,9 +195,9 @@ def solve(stem,options,params,verbose=False):
         if verbose:
             print opt, optRels
         sim = scoreSimilarity(stemRels,optRels,params)
-        scores[opt] = sim
         if verbose:
             print sim
+        scores[opt] = sim
     best = max(scores,key=lambda k: scores[k])
     guess = options.index(best)
     return guess
@@ -215,6 +217,7 @@ def scoreSimilarity(relsA,relsB,params):
                 #identical relationships modifier
                 if rA == rB:
                     score += params['idMod']*params['weights'][rA]
+                    break
 
                 #directionality frame modifier
                 dirsA = [r[-1] for r in rA]
@@ -272,4 +275,5 @@ def optimizePars():
 
 #optimizePars()
 params = setParams()
-print quadThreadedSolver(args.questions, params, args.verbose)
+#print quadThreadedSolver(args.questions, params, args.verbose)
+print testSolver(args.questions, params, args.verbose)
