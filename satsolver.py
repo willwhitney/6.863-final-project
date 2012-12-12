@@ -226,7 +226,7 @@ def scoreSimilarity(relsA,relsB,params):
 def setParams(IsAF,IsAB,sameLemma):
     params = {'existMod':0.01,   #modifier added for existing relationships
               'idMod':1.0,       #modifier added for identical relationships
-              'normMod':0.0,     #modifier added for normalizing by number of relationships ()
+              'normMod':1.0,     #modifier added for normalizing by number of relationships (1.0 is off)
               'dirMod':0.0,      #modifier added for matched directionality (0.0 if off)
               'subsMod':0.0,     #modifier added for matched subset (0.0 is off)
               'defWeight':1.0    #default weight of relations
@@ -250,12 +250,8 @@ argparser.add_argument("number", help="how many questions to answer", nargs='?',
 argparser.add_argument("-v", "--verbose", help="show every question", action="store_true")
 args = argparser.parse_args()
 
-for isaf in xrange(0,10,2):
-    for isab in [0,10,2]:
-        for same in [0,10,2]:
-            isaf = float(isaf) / 10
-            isab = float(isab) / 10
-            same = float(same) / 10
-            params = setParams(isaf,isab,same)
-            print 'params',isaf,isab,same
-            print quadThreadedSolver(args.questions, params, args.verbose)
+paropts = [(float(isaf)/10,float(isab)/10,float(same)/10) for isaf in xrange(0,12,2) for isab in xrange(0,12,2) for same in xrange(0,12,2)] 
+for par in paropts:
+    params = setParams(*par)
+    print 'params',par
+    print quadThreadedSolver(args.questions, params, args.verbose)
