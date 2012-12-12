@@ -58,32 +58,28 @@ def scoreSimilarity(relsA,relsB,params):
         for rA in relsA:
             for rB in relsB:
                 if rA == rB:
+                    print 'matched', rA
                     score += params['idMod']*params['weights'][rA]
-                if params['dirMatch'] == True:
-                    dirsA = [r[-1] for r in rA]
-                    dirsB = [r[-1] for r in rB]
-                    if dirsA == dirsB:
-                        score += params['dirMod']
-                if params['subsMatch'] == True:
-                    if len(rA) == 2 and len(rB) == 2:
-                        if rA[0] == rB[0] or rA[1] == rB[1]:
-                            score += params['subsMod']
-        if params['normB'] == True:
-            score = score / len(relsB)
+                dirsA = [r[-1] for r in rA]
+                dirsB = [r[-1] for r in rB]
+                if dirsA == dirsB:
+                    score += params['dirMod']
+                if len(rA) == 2 and len(rB) == 2:
+                    if rA[0] == rB[0] or rA[1] == rB[1]:
+                        score += params['subsMod']
+        score = score * params['normMod'] / len(relsB)
     return score
 #    return random.randint(0,4)
 
-def setParams(norm,dir,subs):
+def setParams():
     params = {'existMod':0.01,    #modifier added for existing relationships
               'idMod':1.0,        #modifier added for identical relationships
-              'normB':norm,      #true for normalizing by number of relationships in option
-              'dirMatch':dir,   #true for additional matching on only directionality
-              'dirMod':0.1,       #modifier added for matched directionality
-              'subsMatch':subs,  #true for additional matching on subsets of relationship
-              'subsMod':0.5,      #modifier added for matched subset
-              'defWeight':1.0,    #default weight of relations
+              'normMod':0.0,       #modifier added for normalizing by number of relationships ()
+              'dirMod':0.0,       #modifier added for matched directionality (0.0 if off)
+              'subsMod':0.0,      #modifier added for matched subset (0.0 is off)
+              'defWeight':1.0    #default weight of relations
               }
-    weights = defaultdict(lambda:params['defWeight'], {(u'/r/IsAF',):0.4, (u'/r/IsAB',):0.4, (u'sameLemma'):0.3})
+    weights = defaultdict(lambda:params['defWeight'], {(u'/r/IsAF',):0.4, (u'/r/IsAB',):0.4, (u'sameLemma'):0.2})
     params['weights'] = weights
     return params
 
@@ -101,5 +97,5 @@ argparser.add_argument("questions", help="the set of questions to use")
 argparser.add_argument("-v", "--verbose", help="show every question", action="store_true")
 args = argparser.parse_args()
 
-params = setParams(False,False,False)
+params = setParams()
 print testSolver(args.questions, params, args.verbose)
