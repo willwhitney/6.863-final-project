@@ -223,15 +223,15 @@ def scoreSimilarity(relsA,relsB,params):
     return score
 #    return random.randint(0,4)
 
-def setParams(norm,dir,subs):
+def setParams(isaf,isab,same):
     params = {'existMod':0.01,   #modifier added for existing relationships
               'idMod':1.0,       #modifier added for identical relationships
-              'normMod':norm,     #modifier added for normalizing by number of relationships (1.0 is off)
-              'dirMod':dir,      #modifier added for matched directionality (0.0 if off)
-              'subsMod':subs,     #modifier added for matched subset (0.0 is off)
+              'normMod':1.0,     #modifier added for normalizing by number of relationships (1.0 is off)
+              'dirMod':0.0,      #modifier added for matched directionality (0.0 if off)
+              'subsMod':0.0,     #modifier added for matched subset (0.0 is off)
               'defWeight':1.0    #default weight of relations
               }
-    weights = defaultdict(lambda:params['defWeight'], {(u'/r/IsAF',):0.4, (u'/r/IsAB',):0.2, (u'sameLemma'):0.4})
+    weights = defaultdict(lambda:params['defWeight'], {(u'/r/IsAF',):isaf, (u'/r/IsAB',):isab, (u'sameLemma'):same})
     params['weights'] = weights
     return params
 
@@ -242,14 +242,17 @@ argparser.add_argument("-v", "--verbose", help="show every question", action="st
 args = argparser.parse_args()
 
 def optimizePars():
-    paropts = [(float(a)/10,float(b)/10,float(c)/10) for a in xrange(0,12,2) for b in xrange(0,12,2) for c in xrange(0,12,2)] 
+    paropts = [(float(a)/10,float(b)/10,float(c)/10) for a in xrange(0,12,5) for b in xrange(0,12,5) for c in xrange(0,12,5)] 
     results = {}
     for par in paropts:
+        print par
         params = setParams(*par)
         acc = quadThreadedSolver(args.questions, params, args.verbose)
         results[par] = acc
     print results
-    print max(results,key=lambda k: results[k])
+    m = max(results,key=lambda k: results[k])
+    print m
+    print results[m]
 
 optimizePars()
 #params = setParams(1.0,0.0,0.2)
