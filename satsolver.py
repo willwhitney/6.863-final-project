@@ -223,15 +223,15 @@ def scoreSimilarity(relsA,relsB,params):
     return score
 #    return random.randint(0,4)
 
-def setParams(IsAF,IsAB,sameLemma):
+def setParams(norm,dir,subs):
     params = {'existMod':0.01,   #modifier added for existing relationships
               'idMod':1.0,       #modifier added for identical relationships
-              'normMod':1.0,     #modifier added for normalizing by number of relationships (1.0 is off)
-              'dirMod':0.0,      #modifier added for matched directionality (0.0 if off)
-              'subsMod':0.0,     #modifier added for matched subset (0.0 is off)
+              'normMod':norm,     #modifier added for normalizing by number of relationships (1.0 is off)
+              'dirMod':dir,      #modifier added for matched directionality (0.0 if off)
+              'subsMod':subs,     #modifier added for matched subset (0.0 is off)
               'defWeight':1.0    #default weight of relations
               }
-    weights = defaultdict(lambda:params['defWeight'], {(u'/r/IsAF',):IsAF, (u'/r/IsAB',):IsAB, (u'sameLemma'):sameLemma})
+    weights = defaultdict(lambda:params['defWeight'], {(u'/r/IsAF',):0.4, (u'/r/IsAB',):0.2, (u'sameLemma'):0.4})
     params['weights'] = weights
     return params
 
@@ -241,14 +241,18 @@ argparser.add_argument("number", help="how many questions to answer", nargs='?',
 argparser.add_argument("-v", "--verbose", help="show every question", action="store_true")
 args = argparser.parse_args()
 
-paropts = [(float(isaf)/10,float(isab)/10,float(same)/10) for isaf in xrange(0,12,2) for isab in xrange(0,12,2) for same in xrange(0,12,2)] 
-results = {}
-for par in paropts:
-    params = setParams(*par)
-    acc = quadThreadedSolver(args.questions, params, args.verbose)
-    results[par] = acc
-print results
-print max(results,key=lambda k: results[k])
+def optimizePars():
+    paropts = [(float(a)/10,float(b)/10,float(c)/10) for a in xrange(0,12,2) for b in xrange(0,12,2) for c in xrange(0,12,2)] 
+    results = {}
+    for par in paropts:
+        params = setParams(*par)
+        acc = quadThreadedSolver(args.questions, params, args.verbose)
+        results[par] = acc
+    print results
+    print max(results,key=lambda k: results[k])
 
-params = setParams(0.4,0.4,0.3)
+#optimizePars()
+#params = setParams(1.0,0.0,0.2)
+#print quadThreadedSolver(args.questions, params, args.verbose)
+params = setParams(1.0,0.0,0.0)
 print quadThreadedSolver(args.questions, params, args.verbose)
