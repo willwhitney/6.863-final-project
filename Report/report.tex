@@ -1,0 +1,57 @@
+\documentclass[11pt]{article}
+\usepackage[margin=3cm]{geometry}
+\renewcommand*\abstractname{Summary}
+
+\begin{document}
+
+\title{Solving Semantic Analogy Problems Using ConceptNet}
+\author{Mika Braginsky and Will Whitney}
+\maketitle
+
+\begin{abstract}
+We implemented a system for solving SAT analogy problems, using ConceptNet. The system attempts to find the relationship between the target pair of words (such as \emph{mason}:\emph{stone}) and each option pair (such as \emph{teacher}:\emph{chalk}, \emph{carpenter}:\emph{wood}, \emph{soldier}:\emph{gun}, \emph{photograph}:\emph{camera}, \emph{book}:\emph{word}), scores the similarity of each option's relationship to the target's relationship, and selects the option with the highest score. On a dataset of 374 questions, it achieves an accuracy rate of 29.4\%.
+\end{abstract}
+
+\section{Problem Overview}
+\textit{TODO: define the problem, give examples, explain relevance to intelligence}
+
+\section{Previous Work}
+
+\textit{TODO: summarize previous work, show results table}
+
+\begin{tabular}{| l | c | c |}
+\hline
+\textbf{Reference for algorithm} & \textbf{Type} & \textbf{Correct} \\ \hline
+\textit{Random guessing} & \textit{Random} & \textit{20.0\%} \\
+Jiang and Conrath (1997) & Hybrid & 27.3\% \\
+Lin (1998) & Hybrid & 27.3\% \\
+Leacock and Chodrow (1998) & Lexicon-based & 31.3\% \\
+Hirst and St.-Onge (1998) & Lexicon-based & 32.1\% \\
+Resnik (1995) & Hybrid & 33.2\% \\
+Turney (2001) & Corpus-based & 35.0\% \\
+Mangalath et al. (2004) & Corpus-based & 42.0\% \\
+Veale (2004) & Lexicon-based & 43.0\% \\
+Bicici and Yuret (2006) & Corpus-based & 44.0\% \\
+Herdağdelen and Baroni (2009) & Corpus-based & 44.1\% \\
+Turney and Littman (2005) & Corpus-based & 47.1\% \\
+Turney (2012) & Corpus-based & 51.1\% \\
+Bollegala et al. (2009) & Corpus-based & 51.1\% \\
+Turney (2008) & Corpus-based & 52.1\% \\
+Turney (2006a) & Corpus-based & 53.5\% \\
+Turney (2006b) & Corpus-based & 56.1\% \\
+\textit{Average US college applicant} & \textit{Human} & \textit{57.0\%} \\ \hline
+\end{tabular}
+
+\section{Approach}
+\textit{TODO: explain our approach, connect to human strategies, describe ConceptNet}
+
+\section{Implementation}
+\textit{TODO: explain our imeplementation: queries to ConceptNet, parallelization, finding paths, similarity metric}
+
+\section{Results}
+\textit{TODO: show our results, discuss error types}
+
+\section{Further Work}
+\textit{TODO: give options of ways this could be improved/extended}
+
+\end{document}

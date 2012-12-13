@@ -22,7 +22,6 @@ def unpickle_term_map():
   return {}
 
 termMap = unpickle_term_map()
-# termMap = {}
 
 def get_conceptnet_term(term, force_search = False):
   if term + str(force_search) in termMap:

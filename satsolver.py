@@ -148,6 +148,8 @@ def solveAndCheckBlocking(question, params, verbose):
         opts = [opt.split() for opt in opts]
         opts = [(opt[0],opt[1]) for opt in opts]
         guess = solve(stem, opts, params, verbose)
+        if verbose:
+            print 'My guess is', opts[guess], 'the right answer is', opts[ansmap[ans]], '\n'
         if guess == ansmap[ans]:
             return True
         else:
@@ -175,7 +177,7 @@ def testSolver(target,params,verbose):
         total += 1
         if guess == ansmap[ans]:
             correct += 1
-    pickle_term_map()
+#    pickle_term_map()
     return correct/total
 
 def solve(stem,options,params,verbose=False):
@@ -193,9 +195,9 @@ def solve(stem,options,params,verbose=False):
         if verbose:
             print opt, optRels
         sim = scoreSimilarity(stemRels,optRels,params)
-        scores[opt] = sim
         if verbose:
             print sim
+        scores[opt] = sim
     best = max(scores,key=lambda k: scores[k])
     guess = options.index(best)
     return guess
@@ -205,33 +207,52 @@ def scoreSimilarity(relsA,relsB,params):
     #given two lists of relationships, scores how similar they are
     score = 0.0
     if relsA and relsB:
+
+        #existing relationships modifer
         score += params['existMod']
+
         for rA in relsA:
             for rB in relsB:
+
+                #identical relationships modifier
                 if rA == rB:
+#                    print 'weight', rA, params['weights'][rA]
                     score += params['idMod']*params['weights'][rA]
+#                    print 'matched', rA
+                    break
+
+                #directionality frame modifier
                 dirsA = [r[-1] for r in rA]
                 dirsB = [r[-1] for r in rB]
                 if dirsA == dirsB:
                     score += params['dirMod']
+
+                #subsets modifiers
                 if len(rA) == 2 and len(rB) == 2:
                     if rA[0] == rB[0] or rA[1] == rB[1]:
                         score += params['subsMod']
-        # params['normMod'] is in the range [0, 1]
+                elif len(rA) == 2 and len(rB) == 1:
+                    if rA[0] == rB[0] or rA[1] == rB[0]:
+                        score += params['subsMod']
+                elif len(rA) == 1 and len(rB) == 2:
+                    if rB[0] == rA[0] and rB[1] == rA[0]:
+                        score += params['subsMod']
+
+        #normalization by length of relsB
         normalization = (len(relsB) - 1) * params['normMod'] + 1
         score = score * normalization / len(relsB)
-    return score
-#    return random.randint(0,4)
 
-def setParams(norm,dir,subs):
+    return score
+
+def setParams():
     params = {'existMod':0.01,   #modifier added for existing relationships
               'idMod':1.0,       #modifier added for identical relationships
-              'normMod':norm,     #modifier added for normalizing by number of relationships (1.0 is off)
-              'dirMod':dir,      #modifier added for matched directionality (0.0 if off)
-              'subsMod':subs,     #modifier added for matched subset (0.0 is off)
+              'normMod':1.0,     #modifier added for normalizing by number of relationships (1.0 is off)
+              'dirMod':0.0,      #modifier added for matched directionality (0.0 if off)
+              'subsMod':0.0,     #modifier added for matched subset (0.0 is off)
               'defWeight':1.0    #default weight of relations
               }
-    weights = defaultdict(lambda:params['defWeight'], {(u'/r/IsAF',):0.4, (u'/r/IsAB',):0.2, (u'sameLemma'):0.4})
+    weights = defaultdict(lambda:params['defWeight'], {(u'/r/IsAF',):0.4, (u'/r/IsAB',):0.4, ('sameLemma',):0.1})
     params['weights'] = weights
     return params
 
@@ -242,17 +263,21 @@ argparser.add_argument("-v", "--verbose", help="show every question", action="st
 args = argparser.parse_args()
 
 def optimizePars():
-    paropts = [(float(a)/10,float(b)/10,float(c)/10) for a in xrange(0,12,2) for b in xrange(0,12,2) for c in xrange(0,12,2)] 
+#    paropts = [(float(a)/10,float(b)/10,float(c)/10) for a in xrange(0,12,5) for b in xrange(0,12,5) for c in xrange(0,12,5)]
+#    paropts = [(a,b,c) for a in [0.0,0.5,1.0] for b in [0.0,0.5,1.0] for c in [0.0,0.5,1.0]]
+    paropts = [0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0]
     results = {}
     for par in paropts:
-        params = setParams(*par)
+        print par
+        params = setParams(par)
         acc = quadThreadedSolver(args.questions, params, args.verbose)
         results[par] = acc
     print results
-    print max(results,key=lambda k: results[k])
+    m = max(results,key=lambda k: results[k])
+    print m
+    print results[m]
 
 #optimizePars()
-#params = setParams(1.0,0.0,0.2)
-#print quadThreadedSolver(args.questions, params, args.verbose)
-params = setParams(1.0,0.0,0.0)
+params = setParams(0.4,0.4,0.0)
 print quadThreadedSolver(args.questions, params, args.verbose)
+#print testSolver(args.questions, params, args.verbose)
