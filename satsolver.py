@@ -216,7 +216,9 @@ def scoreSimilarity(relsA,relsB,params):
 
                 #identical relationships modifier
                 if rA == rB:
+#                    print 'weight', rA, params['weights'][rA]
                     score += params['idMod']*params['weights'][rA]
+#                    print 'matched', rA
                     break
 
                 #directionality frame modifier
@@ -250,7 +252,7 @@ def setParams():
               'subsMod':0.0,     #modifier added for matched subset (0.0 is off)
               'defWeight':1.0    #default weight of relations
               }
-    weights = defaultdict(lambda:params['defWeight'], {(u'/r/IsAF',):0.4, (u'/r/IsAB',):0.4, (u'sameLemma'):0.4})
+    weights = defaultdict(lambda:params['defWeight'], {(u'/r/IsAF',):0.4, (u'/r/IsAB',):0.4, ('sameLemma',):0.1})
     params['weights'] = weights
     return params
 
@@ -261,11 +263,13 @@ argparser.add_argument("-v", "--verbose", help="show every question", action="st
 args = argparser.parse_args()
 
 def optimizePars():
-    paropts = [(float(a)/10,float(b)/10,float(c)/10) for a in xrange(0,12,5) for b in xrange(0,12,5) for c in xrange(0,12,5)] 
+#    paropts = [(float(a)/10,float(b)/10,float(c)/10) for a in xrange(0,12,5) for b in xrange(0,12,5) for c in xrange(0,12,5)]
+#    paropts = [(a,b,c) for a in [0.0,0.5,1.0] for b in [0.0,0.5,1.0] for c in [0.0,0.5,1.0]]
+    paropts = [0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0]
     results = {}
     for par in paropts:
         print par
-        params = setParams(*par)
+        params = setParams(par)
         acc = quadThreadedSolver(args.questions, params, args.verbose)
         results[par] = acc
     print results
@@ -274,6 +278,6 @@ def optimizePars():
     print results[m]
 
 #optimizePars()
-params = setParams()
-#print quadThreadedSolver(args.questions, params, args.verbose)
-print testSolver(args.questions, params, args.verbose)
+params = setParams(0.4,0.4,0.0)
+print quadThreadedSolver(args.questions, params, args.verbose)
+#print testSolver(args.questions, params, args.verbose)
