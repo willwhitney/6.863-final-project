@@ -49,9 +49,9 @@ In general, the solver must make use of extensive information about the relation
 
 \section{Previous Work}
 
-A number of algorithms have been devised to approach this problem (Table~\ref{comparison} shows their accuracy on a common test of 374 questions). Broadly speaking, they fall into two categories -- lexicon-based and corpus-based (some are hybrid, a mix of both). The lexicon-based algorithms tend to use information from WordNet, a database of English words that encodes many lexical and some semantic relationships. The corpus-based algorithms use a corpus of questions to train their algorithm for the problem.
+A number of algorithms have been devised to approach this problem (Table~\ref{comparison} shows their accuracy on a common test of 374 questions). Broadly speaking, they fall into two categories: lexicon-based and corpus-based (some are hybrid, a mix of both). The lexicon-based algorithms tend to use information from WordNet, a database of English words that encodes many lexical and some semantic relationships. The corpus-based algorithms use a corpus of questions to train their algorithm for the problem.
 
-While some of the previous algorithms achieve almost-human performance, they don't faithfully capture the nature of a human approach to solving the problem. A human doesn't need to be ``trained'' on hundreds of questions before being able to answer further ones, and human utilizes more complex and extensive semantic knowledge than can be provided by WordNet.
+While some of the previous algorithms achieve almost human-level performance, they don't faithfully capture the nature of a human approach to solving the problem. Humans doesn't need to be ``trained'' on hundreds of questions before being able to answer further ones, and humans utilize much more complex and extensive semantic knowledge than can be provided by WordNet.
 
 \vspace*{1em}
 
@@ -92,7 +92,38 @@ Turney (2006b) & Corpus-based & 56.1\% \\
 \setstretch{1.6}
 
 \section{Approach}
-\textit{TODO: explain our approach, connect to human strategies, describe ConceptNet}
+
+Attempting to solve analogy problems in a more plausibly human-like way requires access to a great deal of semantic information. Our approach was to obtain this information using ConceptNet, a semantic network that attempts to encode ``common sense'' knowledge and other information that computers should know about the world\footnote{ConceptNet is developed by the Digital Intuition group, MIT Media Lab.}.
+
+ConceptNet is a directed graph where the nodes are concepts and the edges are relationships between concepts. Its knowledge is assembled from a variety of sources, such as Wikipedia, Wiktionary, WordNet, and direct human contributions. It contains basic semantic relationships and everyday knowledge, such as:
+
+\verb|dog| ---\verb|IsA|$\rightarrow$ \verb|pet|\\
+\verb|learn| ---\verb|MotivatedByGoal|$\rightarrow$ \verb|know more information|
+
+as well as more specialized cultural and scientific knowledge:
+
+\verb|saxophone| ---\verb|UsedFor|$\rightarrow$ \verb|jazz|\\
+\verb|plutinos| ---\verb|can cross|$\rightarrow$ \verb|Neptune's orbit|
+
+If ConceptNet were identical to the full space of concepts and relationships known to a human, using its knowledge would allow a system to solve analogy questions as well as human. Such a system would determine the relationship between each word pair by finding the path from one word to the other, and then select an answer by picking the option with the same path (relationship) as the target pair.
+
+However, ConceptNet is far from perfect -- in trying to find the relationship between two concepts, ConceptNet has both not enough data and noisy data. On one hand, it has not enough data in that it just doesn't know enough about some concepts, such that finding a path between them is impossible. At the same time, its relationships are often very broad, so for some concepts it finds many paths between them. For example, for the concepts ``note'' and ``music'', it finds that:
+
+\verb|music| ---\verb|have or involve|$\rightarrow$ \verb|note|\\
+\verb|note| ---\verb|RelatedTo|$\rightarrow$ \verb|music|\\
+\verb|music| ---\verb|HasProperty|$\rightarrow$ \verb|note|\\
+\verb|note| ---\verb|in|$\rightarrow$ \verb|music|\\
+
+In light of noisy and insufficient data, our approach was to:
+
+\begin{itemize}
+\item Find the list of paths for the target pair
+\item Find the list of paths for each option pair
+\item For each option, compare the option's list of paths to the target's list of paths.\\ Score their similarity using a scoring function.
+\item Pick the option with the highest similarity score
+\end{itemize}
+
+The closer that ConceptNet's knowledge is to a human's knowledge, the more similar this algorithm is to a human's problem solving approach.
 
 \section{Implementation}
 \textit{TODO: explain our imeplementation: queries to ConceptNet, parallelization, finding paths, similarity metric}
