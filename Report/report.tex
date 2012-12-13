@@ -1,9 +1,13 @@
 \documentclass[11pt]{article}
 \usepackage[margin=3cm]{geometry}
 \usepackage{parskip}
+\usepackage{hyperref}
+\usepackage{setspace}
+\usepackage[hypcap]{caption}
 \renewcommand*\abstractname{Summary}
 
 \begin{document}
+\setstretch{1.6}
 
 \title{Solving Semantic Analogy Problems Using ConceptNet}
 \author{Mika Braginsky and Will Whitney}
@@ -17,7 +21,7 @@ We implemented a system for solving SAT analogy problems, using ConceptNet. The 
 
 Reasoning by analogy has long been recognized in the cognitive sciences as a key component of cognition, in that it forms the basis for processes such as decision making, object recognition, face perception, problem solving, and creativity. Modeling this type of reasoning and enabling computer systems to make use of it should therefore be an important step in enabling artificial intelligence systems to emulate vital aspects of cognition.
 
-As a way of exploring the more general phenomenon of reasoning by analogy, we implemented a system for solving analogy questions from the SAT (a standardized test used for college admissions). SAT analogy questions are specifically designed to test students' skill in solving problems using analogy-driven logic, and so they are a reasonable test base for evaluating the ability of a computer system to reason by analogy.
+As a way of exploring the more general phenomenon of reasoning by analogy, we implemented a system for solving analogy questions from the SAT (a standardized test used for college admissions). SAT analogy questions are specifically designed to test students' skill in solving problems using analogy-driven logic, so they are a reasonable test base for evaluating the ability of a computer system to reason by analogy.
 
 An SAT analogy question consists of a target pair of words and five option pairs of words. The task is to select the option pair that ``best expresses a relationship similar to that expressed in the original pair'', as stated in the test's directions. For example:
 
@@ -39,14 +43,22 @@ An OSTRICH is a species of BIRD\\
 (d) CUB is a young BEAR\\
 (e) MONKEY is a  sub-group of PRIMATE}
 
-Solving the problem requires a lot of semantic knowledge about how concepts are related to each other. In this question, the solver needs to not only know what ostriches and birds and lion and cats are, but also how ostriches are related to birds, how lions are realted to cats, etc. This knowledge must be also be at a rather specific level of detail -- if the solver only knew that an ostrich is a type of bird, it would conclude that the same relation holds not just between lion and cat, but also between ewe and sheep and between cub and bear.
+Solving the problem requires a lot of semantic knowledge about how concepts are related to each other. In this question, the solver needs to not only know what ostriches and birds and lion and cats are, but also how ostriches are related to birds, how lions are realted to cats, etc. This knowledge must be also capture a rather specific level of detail -- if the solver only knew that an ostrich is a type of bird, it would conclude that the same relation holds not just between lion and cat, but also between ewe and sheep and between cub and bear.
 
 In general, the solver must make use of extensive information about the relationships between concepts and make inferences about the similarities between relationships. Achieving competence on this task, then, is an indicator of considerable mastery of reasoning abilities and common sense knowledge, both for a human and a computer system.
 
 \section{Previous Work}
 
-\textit{TODO: summarize previous work, show results table}
+A number of algorithms have been devised to approach this problem (Table~\ref{comparison} shows their accuracy on a common test of 374 questions). Broadly speaking, they fall into two categories -- lexicon-based and corpus-based (some are hybrid, a mix of both). The lexicon-based algorithms tend to use information from WordNet, a database of English words that encodes many lexical and some semantic relationships. The corpus-based algorithms use a corpus of questions to train their algorithm for the problem.
 
+While some of the previous algorithms achieve almost-human performance, they don't faithfully capture the nature of a human approach to solving the problem. A human doesn't need to be ``trained'' on hundreds of questions before being able to answer further ones, and human utilizes more complex and extensive semantic knowledge than can be provided by WordNet.
+
+\vspace*{1em}
+
+\setstretch{1}
+\begin{table}[h!]
+
+\centering
 \begin{tabular}{| l | c | c |}
 \hline
 \textbf{Reference for algorithm} & \textbf{Type} & \textbf{Correct} \\ \hline
@@ -69,6 +81,15 @@ Turney (2006a) & Corpus-based & 53.5\% \\
 Turney (2006b) & Corpus-based & 56.1\% \\
 \textit{Average US college applicant} & \textit{Human} & \textit{57.0\%} \\ \hline
 \end{tabular}
+
+\caption[foo]{Results of various algorithms on a common 374 question data set.\footnotemark}
+\label{comparison}
+
+\end{table}
+
+\footnotetext{\url{http://aclweb.org/aclwiki/index.php?title=SAT_Analogy_Questions_\%28State_of_the_art\%29}}
+
+\setstretch{1.6}
 
 \section{Approach}
 \textit{TODO: explain our approach, connect to human strategies, describe ConceptNet}
