@@ -252,7 +252,7 @@ def setParams():
               'subsMod':0.0,     #modifier added for matched subset (0.0 is off)
               'defWeight':1.0    #default weight of relations
               }
-    weights = defaultdict(lambda:params['defWeight'], {(u'/r/IsAF',):0.4, (u'/r/IsAB',):0.4, ('sameLemma',):0.1})
+    weights = defaultdict(lambda:params['defWeight'], {(u'/r/IsAF',):0.2, (u'/r/IsAB',):0.2, ('sameLemma',):0.1})
     params['weights'] = weights
     return params
 
@@ -265,7 +265,7 @@ args = argparser.parse_args()
 def optimizePars():
 #    paropts = [(float(a)/10,float(b)/10,float(c)/10) for a in xrange(0,12,5) for b in xrange(0,12,5) for c in xrange(0,12,5)]
 #    paropts = [(a,b,c) for a in [0.0,0.5,1.0] for b in [0.0,0.5,1.0] for c in [0.0,0.5,1.0]]
-    paropts = [0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0]
+    paropts = [0.1,0.12,0.14,0.16,0.18,0.2,0.22,0.24,0.26,0.28,0.3]
     results = {}
     for par in paropts:
         print par
@@ -278,6 +278,6 @@ def optimizePars():
     print results[m]
 
 #optimizePars()
-params = setParams(0.4,0.4,0.0)
+params = setParams()
 print quadThreadedSolver(args.questions, params, args.verbose)
 #print testSolver(args.questions, params, args.verbose)
