@@ -1,5 +1,6 @@
 \documentclass[11pt]{article}
 \usepackage[margin=3cm]{geometry}
+\usepackage{parskip}
 \renewcommand*\abstractname{Summary}
 
 \begin{document}
@@ -9,14 +10,38 @@
 \maketitle
 
 \begin{abstract}
-We implemented a system for solving SAT analogy problems, using ConceptNet. The system attempts to find the relationship between the target pair of words (such as \emph{mason}:\emph{stone}) and each option pair (such as \emph{teacher}:\emph{chalk}, \emph{carpenter}:\emph{wood}, \emph{soldier}:\emph{gun}, \emph{photograph}:\emph{camera}, \emph{book}:\emph{word}), scores the similarity of each option's relationship to the target's relationship, and selects the option with the highest score. On a dataset of 374 questions, it achieves an accuracy rate of 29.7\%.
+We implemented a system for solving SAT analogy problems, using ConceptNet. The system attempts to find the relationship between the target pair of words (such as \emph{mason}:\emph{stone}) and each option pair (such as \emph{teacher}:\emph{chalk}, \emph{carpenter}:\emph{wood}, \emph{soldier}:\emph{gun}, \emph{photograph}:\emph{camera}, \emph{book}:\emph{word}), scores the similarity of each option's relationship to the target's relationship, and selects the option with the highest score. On a dataset of 374 questions, it achieves an accuracy rate of 29.7\%, with an accuracy rate of 47\% on the 99 questions for which it can obtain at least minimal information.
 \end{abstract}
 
 \section{Problem Overview}
 
-\textit{TODO: define the problem, give examples, explain relevance to intelligence}
+Reasoning by analogy has long been recognized in the cognitive sciences as a key component of cognition, in that it forms the basis for processes such as decision making, object recognition, face perception, problem solving, and creativity. Modeling this type of reasoning and enabling computer systems to make use of it should therefore be an important step in enabling artificial intelligence systems to emulate vital aspects of cognition.
 
-Reasoning by analogy 
+As a way of exploring the more general phenomenon of reasoning by analogy, we implemented a system for solving analogy questions from the SAT (a standardized test used for college admissions). SAT analogy questions are specifically designed to test students' skill in solving problems using analogy-driven logic, and so they are a reasonable test base for evaluating the ability of a computer system to reason by analogy.
+
+An SAT analogy question consists of a target pair of words and five option pairs of words. The task is to select the option pair that ``best expresses a relationship similar to that expressed in the original pair'', as stated in the test's directions. For example:
+
+\texttt{
+ostrich:bird\\
+(a) lion:cat\\
+(b) goose:flock\\
+(c) ewe:sheep\\
+(d) cub:bear\\
+(e) primate:monkey}
+
+To solve the problem, one must determine the relationship between each word pair:
+
+\texttt{
+An OSTRICH is a species of BIRD\\
+(a) LION is a species of CAT\\
+(b) FLOCK is a group of GOOSE\\
+(c) EWE is a female SHEEP\\
+(d) CUB is a young BEAR\\
+(e) MONKEY is a  sub-group of PRIMATE}
+
+Solving the problem requires a lot of semantic knowledge about how concepts are related to each other. In this question, the solver needs to not only know what ostriches and birds and lion and cats are, but also how ostriches are related to birds, how lions are realted to cats, etc. This knowledge must be also be at a rather specific level of detail -- if the solver only knew that an ostrich is a type of bird, it would conclude that the same relation holds not just between lion and cat, but also between ewe and sheep and between cub and bear.
+
+In general, the solver must make use of extensive information about the relationships between concepts and make inferences about the similarities between relationships. Achieving competence on this task, then, is an indicator of considerable mastery of reasoning abilities and common sense knowledge, both for a human and a computer system.
 
 \section{Previous Work}
 

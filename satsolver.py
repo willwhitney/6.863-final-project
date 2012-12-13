@@ -244,9 +244,9 @@ def scoreSimilarity(relsA,relsB,params):
 
     return score
 
-def setParams(p):
+def setParams():
     params = {'existMod':0.01,   #modifier added for existing relationships
-              'idMod':p,       #modifier added for identical relationships
+              'idMod':1.0,       #modifier added for identical relationships
               'normMod':1.0,     #modifier added for normalizing by number of relationships (1.0 is off)
               'dirMod':0.0,      #modifier added for matched directionality (0.0 if off)
               'subsMod':0.0,     #modifier added for matched subset (0.0 is off)
@@ -265,7 +265,7 @@ args = argparser.parse_args()
 def optimizePars():
 #    paropts = [(float(a)/10,float(b)/10,float(c)/10) for a in xrange(0,12,5) for b in xrange(0,12,5) for c in xrange(0,12,5)]
 #    paropts = [(a,b,c) for a in [0.0,0.5,1.0] for b in [0.0,0.5,1.0] for c in [0.0,0.5,1.0]]
-    paropts = [0.8,0.85,0.9,0.95,1.0]
+    paropts = [0.1,0.12,0.14,0.16,0.18,0.2,0.22,0.24,0.26,0.28,0.3]
     results = {}
     for par in paropts:
         print par
@@ -277,7 +277,7 @@ def optimizePars():
     print m
     print results[m]
 
-optimizePars()
-#params = setParams()
-#print quadThreadedSolver(args.questions, params, args.verbose)
+#optimizePars()
+params = setParams()
+print quadThreadedSolver(args.questions, params, args.verbose)
 #print testSolver(args.questions, params, args.verbose)
