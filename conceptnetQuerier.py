@@ -22,6 +22,7 @@ def unpickle_term_map():
   return {}
 
 termMap = unpickle_term_map()
+# termMap = {}
 
 def get_conceptnet_term(term, force_search = False):
   if term + str(force_search) in termMap:
@@ -140,18 +141,3 @@ def get_relationship(a, b):
     relationships = get_relationship_simple(a, b, True, True)
   return relationships
   
-
-
-
-# print get_relationship("ostrich", "bird")
-# print get_relationship("ostrich", "bird")
-# print get_relationship("ostrich", "bird")
-# print get_relationship("ostrich", "bird")
-
-
-# {"isA", "has"}
-
-# traincepts = get_conceptnet_term("train")
-# print traincepts['edges'][0]
-# traincepts['edges'][0]['endLemmas']
-# traincepts['edges'][0]['startLemmas']

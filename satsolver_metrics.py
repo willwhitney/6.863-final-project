@@ -107,8 +107,12 @@ def quadThreadedSolver(target, params, verbose):
 #    print "Correct: " + str(correctCount)
 #    print "Total: " + str(total)
     for result in results:
+        if result[0]:
+            correctList.append(result)
+        else:
+            incorrectList.append(result)
         print result
-    # return correctCount / total
+    return float(len(correctList)) / ( len(correctList) + len(incorrectList))
     
 def biThreadedSolver(target, verbose):
     # Splits the problem in four, solves each set in a separate thread,
@@ -238,33 +242,52 @@ def scoreSimilarity(relsA,relsB,params):
     #given two lists of relationships, scores how similar they are
     score = 0.0
     if relsA and relsB:
+
+        #existing relationships modifer
         score += params['existMod']
+
         for rA in relsA:
             for rB in relsB:
+
+                #identical relationships modifier
                 if rA == rB:
+#                    print 'weight', rA, params['weights'][rA]
                     score += params['idMod']*params['weights'][rA]
+#                    print 'matched', rA
+                    break
+
+                #directionality frame modifier
                 dirsA = [r[-1] for r in rA]
                 dirsB = [r[-1] for r in rB]
                 if dirsA == dirsB:
                     score += params['dirMod']
+
+                #subsets modifiers
                 if len(rA) == 2 and len(rB) == 2:
                     if rA[0] == rB[0] or rA[1] == rB[1]:
                         score += params['subsMod']
-        # params['normMod'] is in the range [0, 1]
+                elif len(rA) == 2 and len(rB) == 1:
+                    if rA[0] == rB[0] or rA[1] == rB[0]:
+                        score += params['subsMod']
+                elif len(rA) == 1 and len(rB) == 2:
+                    if rB[0] == rA[0] and rB[1] == rA[0]:
+                        score += params['subsMod']
+
+        #normalization by length of relsB
         normalization = (len(relsB) - 1) * params['normMod'] + 1
         score = score * normalization / len(relsB)
-    return score
-#    return random.randint(0,4)
 
-def setParams(norm,dir,subs):
+    return score
+
+def setParams():
     params = {'existMod':0.01,   #modifier added for existing relationships
               'idMod':1.0,       #modifier added for identical relationships
-              'normMod':norm,     #modifier added for normalizing by number of relationships (1.0 is off)
-              'dirMod':dir,      #modifier added for matched directionality (0.0 if off)
-              'subsMod':subs,     #modifier added for matched subset (0.0 is off)
+              'normMod':1.0,     #modifier added for normalizing by number of relationships (1.0 is off)
+              'dirMod':0.0,      #modifier added for matched directionality (0.0 if off)
+              'subsMod':0.0,     #modifier added for matched subset (0.0 is off)
               'defWeight':1.0    #default weight of relations
               }
-    weights = defaultdict(lambda:params['defWeight'], {(u'/r/IsAF',):0.4, (u'/r/IsAB',):0.2, (u'sameLemma'):0.4})
+    weights = defaultdict(lambda:params['defWeight'], {(u'/r/IsAF',):0.2, (u'/r/IsAB',):0.2, ('sameLemma',):0.1})
     params['weights'] = weights
     return params
 
@@ -275,27 +298,21 @@ argparser.add_argument("-v", "--verbose", help="show every question", action="st
 args = argparser.parse_args()
 
 def optimizePars():
-    paropts = [(float(a)/10,float(b)/10,float(c)/10) for a in xrange(0,12,2) for b in xrange(0,12,2) for c in xrange(0,12,2)]
+#    paropts = [(float(a)/10,float(b)/10,float(c)/10) for a in xrange(0,12,5) for b in xrange(0,12,5) for c in xrange(0,12,5)]
+#    paropts = [(a,b,c) for a in [0.0,0.5,1.0] for b in [0.0,0.5,1.0] for c in [0.0,0.5,1.0]]
+    paropts = [0.1,0.12,0.14,0.16,0.18,0.2,0.22,0.24,0.26,0.28,0.3]
     results = {}
     for par in paropts:
-        params = setParams(*par)
+        print par
+        params = setParams(par)
         acc = quadThreadedSolver(args.questions, params, args.verbose)
         results[par] = acc
     print results
-    print max(results,key=lambda k: results[k])
+    m = max(results,key=lambda k: results[k])
+    print m
+    print results[m]
 
 #optimizePars()
-#params = setParams(1.0,0.0,0.2)
-
-params = setParams(1.0,0.0,0.0)
-
-# print testSolver(args.questions, params, args.verbose)
+params = setParams()
 print quadThreadedSolver(args.questions, params, args.verbose)
-
-
-# print quadThreadedSolver(args.questions, params, args.verbose)
-# print quadThreadedSolver(args.questions, params, args.verbose)
-# print quadThreadedSolver(args.questions, params, args.verbose)
-# print quadThreadedSolver(args.questions, params, args.verbose)
-# print quadThreadedSolver(args.questions, params, args.verbose)
-# print quadThreadedSolver(args.questions, params, args.verbose)
+#print testSolver(args.questions, params, args.verbose)

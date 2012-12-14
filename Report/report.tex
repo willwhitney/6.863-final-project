@@ -14,7 +14,7 @@
 \maketitle
 
 \begin{abstract}
-We implemented a system for solving SAT analogy problems, using ConceptNet. The system attempts to find the relationship between the target pair of words (such as \emph{mason}:\emph{stone}) and each option pair (such as \emph{teacher}:\emph{chalk}, \emph{carpenter}:\emph{wood}, \emph{soldier}:\emph{gun}, \emph{photograph}:\emph{camera}, \emph{book}:\emph{word}), scores the similarity of each option's relationship to the target's relationship, and selects the option with the highest score. On a dataset of 374 questions, it achieves an accuracy rate of 29.7\%, with an accuracy rate of 47\% on the 99 questions for which it can obtain at least minimal information.
+We implemented a system for solving SAT analogy problems, using ConceptNet. The system attempts to find the relationship between the target pair of words (such as \emph{mason}:\emph{stone}) and each option pair (such as \emph{teacher}:\emph{chalk}, \emph{carpenter}:\emph{wood}, \emph{soldier}:\emph{gun}, \emph{photograph}:\emph{camera}, \emph{book}:\emph{word}), scores the similarity of each option's relationship to the target's relationship, and selects the option with the highest score. On a dataset of 374 questions, it achieves an accuracy rate of 29.7\%, with an accuracy rate of 55\% on the 99 questions for which it can obtain at least minimal information.
 \end{abstract}
 
 \section{Problem Overview}
@@ -126,13 +126,106 @@ In light of noisy and insufficient data, our approach was to:
 The closer that ConceptNet's knowledge is to a human's knowledge, the more similar this algorithm is to a human's problem solving approach.
 
 \section{Implementation}
-\textit{TODO: explain our imeplementation: queries to ConceptNet, parallelization, finding paths, similarity metric}
+
+Our implementation of this system is written in Python, which was chosen for its large selection of libraries, acceptable speed, flexibility, and widespread use. Flexibility in particular was a key attribute, as graph traversal can quickly become unnecessarily complicated in many more structured languages. Our Python code finds data about the relevant terms on ConceptNet, then traverses the ConceptNet graph to find relationships between the terms. It then examines the relationships of the option pairs and compares them to the relationships of the target pair, as described above, and returns the correct answer.
+
+\subsection{ConceptNet Access}
+
+In implementing this system, we needed access to the data contained in ConceptNet. ConceptNet offers three options for accessing their data:
+
+\begin{enumerate}
+\item Download a flat \verb|.json| file containing every concept and every edge
+\item Run your own version of the ConceptNet server using Solr and Python
+\item Access their online API with \verb|HTTP GET| requests returning \verb|JSON|
+\end{enumerate}
+
+As with all graph-search and machine learning projects, performance is very important for this project. The ability to rapidly run tests at scale, analyze the results, and iterate is key. That made speed critical in our analysis of these methods.
+
+We first considered the flat \verb|JSON| method. Upon inspection, however, it quickly became obvious how unwieldy it was; once unzipped, the \verb|JSON| files occupied approximately \verb|8 GB| of hard disk space. While this on its own was not an issue, the fact that it is un-indexed means that in order to access the contained data, we would have to load all \verb|8 GB| into memory before attempting to search. \verb|8 GB|, already a large memory requirement, is made all the more unreasonable by the fact that standard Python in-memory structures occupy several times the space of \verb|JSON|-encoded data.
+
+We then began to consider the second option, running a Solr database and a Python web server. As this is the method used by ConceptNet themselves, this on its surface seemed reasonable, and having a proper database meant that queries would be faster and more flexible than those against the \verb|JSON| files. Once we read further, though, we observed that ConceptNet was actually running their service with two servers, each a quad-core machine with 7.5 GB of RAM, and the database sharded between them. Furthermore, there would be significant implementation time involved even with getting the server up and running.
+
+As such, we came to the third option: the ConceptNet web API. We had originally hesitated to consider this option due to the latencies inherent in an online API. At a minimum, every query requires the round-trip latency to the server location, in this case Virginia, which is typically on the order of a couple of hundred milliseconds. Since we needed to make approximately 3700 queries per run against our full dataset, that meant that every run would include at the very minimum twelve minutes of latency. In practice, this meant that each of those runs actually took about 25 minutes. However, since this was the only option that was technologically feasible, we went forward with it.
+
+In the end we came up with two methods to improve our testing time, parallelization and caching. Our first experiment in these optimizations involved making very highly parallel requests (\verb|O(1 per query)|, or 3700 simultaneous requests) to the ConceptNet API. While this solution was technically acceptable on our end, it rapidly became obvious that the ConceptNet servers were not able to keep up with the load and would still be a bottleneck for us, and furthermore would be unable to serve other requests while our tests were running. This being unacceptable, we began to investigate caching.
+
+In order to reduce the strain on ConceptNet's servers and further decrease the time required for our testing cycle, we looked more into local solutions (like 1. and 2. from above), but from the point of view of caching. After exploring a few approaches, we decided to use Python's native \verb|pickle| function to store the data from ConceptNet, then reload that data from local disk before every run.
+
+\verb|pickle| is a data serialization function implemented by Python, and it is intended to provide easy-to-use and compact serialization of all Python types while remaining moderately performant. In our case, using it meant building a dictionary containing all of the data that we received from ConceptNet during a normal run, a far smaller set of data than all of ConceptNet, then calling \verb|pickle| on that dictionary and writing it to disk.
+
+This resulted in a \verb|.pickle| file of approximately \verb|230 MB|, a very acceptable size. Once that data was stored locally, we no longer needed to make any queries to ConceptNet whatsoever. When we begin a test, Python loads the data into memory, taking at maximum about \verb|1.5 GB|, then runs all queries against that in-memory structure. This reduced our runtime against our full data set of questions from 25 minutes to about 30 seconds.
+
+\subsection{Threading}
+
+To maximize the throughput of our system, we employed threading using the Python \verb|threading.Thread| type. Since Python otherwise runs in only a single thread in a single process, the parallel computing power of modern multicore processors largely goes to waste, as all but one core will be sitting idle. Splitting the problem into threads up to the number of available cores increases the available power by a factor of the number of cores.
+
+In our case, we split the set of questions to solve into four groups, one for each core of our largest machine, and then created a new thread to solve each group of questions. When done, these threads sent their results back to the main thread via a Python \verb|Queue.Queue|, then the main thread collected the results and returned.
+
+\subsection{Pathfinding}
+
+Though all of the concepts from our SAT analogies have a direct relationship, many of those relationships are only represented indirectly (if at all) in ConceptNet, with both concepts having some relationship to an intermediate concept. In order to find those relationships as quickly as possible, we implemented a bidirectional graph search. This search looked from each of the `root' concepts, mapping out every way to get from one to the other in two or fewer edges. ConceptNet would properly be represented as a directed acyclic graph (DAG), but as we are interested in relationships in either direction, we follow edges going to and from either `root', recording the direction in which we traverse the edge. Wherever we find a path between the two `roots', we record the edges (which in ConceptNet represent relationships) which were traversed along that path.
+
+As we search the graph for exact matches, endpoint to endpoint, on ConceptNet, we also take into account some information hidden by the messiness of the ConceptNet data. ConceptNet has as its basic unit the ``lemma'', or concept, which is usually a single word; however, these lemmas are sometimes given as a word and its definition instead of the word alone. In order to use that definition data, we also check to see if both of the `root' words are contained in the same lemma, and if so we give them the relationship `sameLemma' in our similarity analysis.
+
+\subsection{Similarity}
+
+Finally, once we have a set of all relationships (paths) between the stem of the question and each of the pairs of words which are the choices of answer, we compare the relationships of the stem and each choice. For each relationship that they have the same, and each similar relationship, that choice's score increases, and once all choices have had their similarity analyzed and scores computed, the system selects the choice with the greatest score.
+
+We had several different categories of similarity which would add to an option's score, each of them given different weights. Most types of relationship were weighted at $1.0$ point, but some, such as the ``IsA'' relationship, proved less valuable than others, as they did not convey a specific enough meaning, and these were given a lower weighting.
+
+For every relationship the choice had that was exactly shared by the stem, it was awarded the full weight of the relationship. For each relationship between the two words of the choice, that choice was awarded $0.01$ points, to push it slightly above other choices which had no known relationships.
+
+We experimented with several variations in our scoring, which did things like allow for matching on subsets of correct relationships, or normalized the score of a choice by the number of relationships it had. However, after testing a large grid of these possible variations, we discovered that they did more to hurt than to help. It remains possible that with a larger sample size or with more complete concept relationship data these methods would be helpful, but in our experiments this proved not to be the case.
 
 \section{Results}
-\textit{TODO: show our results, discuss error types}
+
+After optimizing our weighting, our system correctly answered 111 of 374 questions, giving us a success rate of 29.7\%. This is slightly superior to the results of the hybrid systems of Jiang and Conrath in 1997 and Lin in 1998. In order to properly analyze this result, we should examine the causes of the system's incorrect answers.
+
+\subsection{Errors}
+
+When looking at the errors of this system, there are two main categories: errors where insufficient information was present, and cases where there was at least the minimum  viable amount of information. We will define the minimum viable information as being the situation where there is at least one relationship for the stem and for each of the choices where some path between the two concepts contains at most one intermediate concept.
+
+Errors in cases with insufficient data were by far the majority of our incorrect answers, representing 199 of our 263 incorrects, or 76\%. In these situations, ConceptNet is simply lacking data about the words defining the question. For example,
+
+\texttt{
+lull:trust\\
+(a)balk:fortitude\\
+(b)betray:loyalty\\
+(c)cajole:compliance\\
+(d)hinder:destination\\
+(e)soothe:passion\\}
+
+In this case, ConceptNet has almost no information about at least one of these words in each pair. ``Lull'', for example, has connections to ``lullaby'', ``calm'', and ``letup'', but not to anything relating to trust or security or safety. Every one of the choices is in a similar position, with insufficient connections from each of the words to the other. This is frequently the case for the rarer words in the English language.
+
+Even in situations where there is enough information to meet our minimum viability requirement, there is sometimes only a very vague connection found by ConceptNet. In the case
+
+\texttt{
+livid:anger\\
+(a)querulous:reconciliation\\
+(b)forlorn:hope\\
+(c)radiant:happiness\\
+(d)graceful:posture\\
+(e)marvelous:wonder\\}
+
+there is a relationship found between each pair, but in the stem (the most important relationship), there is only one, and it is a very weak one:
+
+\verb|livid| $\leftarrow$---\verb|SimilarTo| \verb|angry|\\
+and\\
+\verb|anger| $\leftarrow$---\verb|DerivedFrom| \verb|angry|\\
+
+These very general types of information, while better than nothing, are not sufficient to reliably distinguish the right answer from the wrong one.
+
+However, even including questions in which the relationships are few and general, on questions with information above our threshold, our accuracy is a near-human 55\%. This beats all of the prior projects on this subject except one.
 
 \section{Further Work}
-\textit{TODO: give options of ways this could be improved/extended}
+
+In the future, there is much which could be done to advance the state of projects like this. The most straightforward improvement would simply be adding data to ConceptNet or pulling in additional data sources with similar information. As shown above, the vast majority of the incorrectly answered questions had insufficient information about their words on ConceptNet; if the coverage of ConceptNet were up to our minimum viable data threshold for each question, perhaps a project like this one would achieve 55\% accuracy overall, rivaling human students. Additional data in ConceptNet would also solve problems like the \verb|livid:anger| question shown above, where the graph density was simply too low to extract significant meaning.
+
+Another approach, trying to make the best of the limited data currently available, might search the graph for paths containing more edges, finding more indirect relationships. This approach would, however, be faced with the exponential expansion of possibilities, with no simple pruning heuristic in sight. However, for a few more steps, and with very careful cache and memory management, this approach would be very feasible.
+
+Even further out, there might be the possibility of mapping the whole of ConceptNet into a huge hierarchical graph. Then, when searching for at least a single first connection between two terms, a program could traverse hierarchically ``up'' the graph from each term until the two searches intersected. With proper interpretation of the ConceptNet relationships, this hierarchy could even represent a massive full conceptual classification of the world to power a system which knows not only that an ostrich is a type of bird, but that it's strange in that it can't fly, when most birds do, and that some birds migrate, and so do many other animals, but ostriches don't, and that they only live in Australia, which is an island continent in the Southern Hemisphere. It would be big and messy and all over the place.
+
+But so are people.
 
 \clearpage
 
