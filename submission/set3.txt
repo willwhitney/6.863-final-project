@@ -1,0 +1,89 @@
+190 FROM REAL SATs
+audience theater n:n
+crew ship n:n
+scholars library n:n
+group society n:n
+spectators arena n:n
+actors stage n:n
+d
+
+190 FROM REAL SATs
+quart volume n:n
+day night n:n
+mile distance n:n
+decade century n:n
+friction heat n:n
+part whole n:n
+b
+
+190 FROM REAL SATs
+cartographer maps n:n
+architect blueprints n:n
+bibliographer books n:n
+curator artworks n:n
+traveler countries n:n
+surveyor instruments n:n
+a
+
+190 FROM REAL SATs
+abrasive skin a:n
+flammable fire a:n
+resilient shock a:n
+soluble water a:n
+corrosive iron a:n
+responsive stimulus a:n
+d
+
+190 FROM REAL SATs
+canal waterway n:n
+skyline city n:n
+bank stream n:n
+hub wheel n:n
+dam river n:n
+reservoir lake n:n
+e
+
+190 FROM REAL SATs
+throng people n:n
+game players n:n
+picnic woods n:n
+swarm insects n:n
+cat kittens n:n
+vase flowers n:n
+c
+
+190 FROM REAL SATs
+foolhardy recklessness a:n
+defiant complacency a:n
+serene tranquillity a:n
+precious worthlessness a:n
+sociable antagonism a:n
+lucky persistence a:n
+b
+
+190 FROM REAL SATs
+emend faulty v:a
+recruit competent v:a
+fracture separable v:a
+renovate habitable v:a
+purify contaminated v:a
+reproduce copied v:a
+d
+
+190 FROM REAL SATs
+neighbor proximity n:n
+supervisor obedience n:n
+comrade victory n:n
+adversary opposition n:n
+traitor loyalty n:n
+teammate competitiveness n:n
+c
+
+190 FROM REAL SATs
+heckler disconcert n:v
+outcast exclude n:v
+firebrand soothe n:v
+performer applaud n:v
+monarch depose n:v
+lobbyist persuade n:v
+e

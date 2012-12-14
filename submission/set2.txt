@@ -1,0 +1,89 @@
+190 FROM REAL SATs
+condescending respect a:n
+bashful attention a:n
+obliging thanks a:n
+insecure doubt a:n
+merciless compassion a:n
+pathetic pity a:n
+d
+
+190 FROM REAL SATs
+livid anger a:n
+querulous reconciliation a:n
+forlorn hope a:n
+radiant happiness a:n
+graceful posture a:n
+marvelous wonder a:n
+c
+
+190 FROM REAL SATs
+fathom depth v:n
+amplify volume v:n
+overflow capacity v:n
+appraise value v:n
+stump answer v:n
+weigh scale v:n
+c
+
+190 FROM REAL SATs
+remuneration labor n:n
+gratuity bonus n:n
+apology regret n:n
+pledge donation n:n
+trophy victory n:n
+debt loan n:n
+d
+
+190 FROM REAL SATs
+tutor pupil n:n
+patron client n:n
+coach athlete n:n
+waiter diner n:n
+driver passenger n:n
+novelist writer n:n
+b
+
+190 FROM REAL SATs
+decorate plain v:a
+create talented v:a
+mend repaired v:a
+cook raw v:a
+sing vocal v:a
+narrate fictitious v:a
+c
+
+190 FROM REAL SATs
+pallid color a:n
+vital energy a:n
+parched moisture a:n
+restrained limit a:n
+measured quantity a:n
+deliberate intention a:n
+b
+
+190 FROM REAL SATs
+drift move v:v
+sprint run v:v
+boil heat v:v
+ramble walk v:v
+evade elude v:v
+crawl creep v:v
+c
+
+190 FROM REAL SATs
+crass refinement a:n
+inefficient time a:n
+prudent discretion a:n
+clairvoyant perception a:n
+inept mistake a:n
+pretentious modesty a:n
+e
+
+190 FROM REAL SATs
+pariah ostracism n:n
+idol adulation n:n
+gourmand food n:n
+scapegoat symbol n:n
+collector ownership n:n
+protagonist narrative n:n
+a
